@@ -12,8 +12,6 @@ interface ImportMetaEnv {
   readonly PUBLIC_FEATURE_CHAT?: string;
   readonly PUBLIC_FEATURE_ADMIN?: string;
   readonly PUBLIC_FEATURE_DONATIONS?: string;
-  readonly PUBLIC_AUTH_GITHUB?: string;
-  readonly PUBLIC_AUTH_GOOGLE?: string;
 }
 
 interface ImportMeta {

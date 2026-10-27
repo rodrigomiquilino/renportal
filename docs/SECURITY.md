@@ -15,6 +15,10 @@ Não podem aparecer:
 
 A service role vive como secret da Edge Function. O comando está no README. O cliente do browser em `src/lib/supabase.ts` só conhece a chave publishable.
 
+## Entrada
+
+A conta entra com e-mail e senha, ou com um link enviado a esse e-mail. Não há provedor social. Trocar a senha e apagar a conta pedem a senha atual. Quem só usa o link define a senha em Esqueci a senha antes.
+
 ## RLS
 
 Toda tabela de `public` tem RLS ligado. As policies não fazem subquery em `profiles` para saber se alguém é admin: `is_admin()` é `security definer` e lê a linha uma vez. O chat usa `is_conversation_participant()` pelo mesmo motivo.

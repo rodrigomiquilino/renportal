@@ -38,8 +38,7 @@ describe('sanitizeChat', () => {
 });
 
 describe('translateAuthError', () => {
-  it('traduz credencial e provider desligado', () => {
+  it('traduz e-mail ou senha incorretos', () => {
     expect(translateAuthError('Invalid login credentials')).toMatch(/incorretos/);
-    expect(translateAuthError('Provider is not enabled')).toMatch(/não está ligado/);
   });
 });

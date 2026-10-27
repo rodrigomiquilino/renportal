@@ -2,6 +2,7 @@ import { useEffect, useSyncExternalStore } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { isGuardedPath, pathWithinSite } from '@/lib/access';
 import { translateAuthError } from '@/lib/auth-errors';
+import { consumeNext } from '@/lib/auth-storage';
 import { href } from '@/lib/paths';
 import { supabase } from '@/lib/supabase';
 import type { Profile } from '@/lib/database.types';
@@ -121,4 +122,36 @@ export function useRequireSession(): AuthSnapshot {
 
 export function authErrorMessage(raw: string): string {
   return translateAuthError(raw);
+}
+
+export type SessionContinue = 'redirect' | 'network';
+
+/**
+ * Erro de rede não conta como onboarding feito.
+ * Quem já concluiu volta para `?next=` ou para o início.
+ */
+export async function continueAfterSession(): Promise<SessionContinue> {
+  const { data, error } = await supabase.auth.getUser();
+  if (error) {
+    const message = error.message.toLowerCase();
+    if (message.includes('network') || message.includes('fetch') || message.includes('failed')) return 'network';
+  }
+  const userId = data.user?.id;
+  if (!userId) {
+    window.location.href = href('/');
+    return 'redirect';
+  }
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('onboarded_at')
+    .eq('id', userId)
+    .maybeSingle();
+  if (profileError) return 'network';
+  if (!profile?.onboarded_at) {
+    window.location.href = href('/onboarding/');
+    return 'redirect';
+  }
+  const next = consumeNext();
+  window.location.href = next ? href(next) : href('/');
+  return 'redirect';
 }

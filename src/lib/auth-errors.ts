@@ -45,9 +45,6 @@ export function translateAuthError(raw: string): string {
   ) {
     return 'Este nome de usuário já está em uso.';
   }
-  if (message.includes('provider is not enabled') || message.includes('unsupported provider')) {
-    return 'Esse login ainda não está ligado no Supabase. Dá para entrar com e-mail e senha.';
-  }
   if (message.includes('signup') && message.includes('disabled')) {
     return 'O cadastro está fechado neste projeto.';
   }

@@ -34,7 +34,7 @@ supabase functions deploy delete-account --project-ref wlacdgwbwsykvpobkbib
 
 `verify_jwt` fica `false` por causa do preflight, como as outras.
 
-Quem tem identidade de e-mail redigita a senha antes. Conta só de GitHub ou Google confirma digitando o usuário. Isso evita clique errado. Uma sessão roubada que já consegue ler o usuário ainda consegue apagar conta OAuth; a senha cobre o caso do e-mail.
+Apagar a conta pede o usuário e a senha atual. Quem entra só com o link do e-mail define a senha em Esqueci a senha antes.
 
 ## 3. Auth
 
@@ -45,9 +45,7 @@ Acrescentar em Authentication → URL configuration, além das que já estavam (
 
 A troca de e-mail manda o link para essa página. Confirme o e-mail novo e, se o Supabase mandar, o antigo também.
 
-Senha mínima continua 8. GitHub e Google seguem como na rodada anterior: desligados no painel, o botão explica; `PUBLIC_AUTH_GITHUB=false` ou `PUBLIC_AUTH_GOOGLE=false` escondem o botão no build.
-
-Redirect dos apps OAuth: `https://wlacdgwbwsykvpobkbib.supabase.co/auth/v1/callback`.
+A entrada é e-mail e senha, ou um link enviado ao e-mail. Não há login social. Senha mínima continua 8. Em Authentication → Providers, deixe e-mail ligado e desligue os outros.
 
 ## 4. O que não vai no Git
 
@@ -75,7 +73,7 @@ supabase secrets set LIVEPIX_CLIENT_ID=… LIVEPIX_CLIENT_SECRET=… --project-r
 
 Opcional, se o site não for o GitHub Pages: `PUBLIC_SITE_URL` e `PUBLIC_BASE_PATH`. O padrão do checkout é `https://rodrigomiquilino.github.io` e `/renportal`. A volta depois do Pix é `/renportal/apoiar/?retorno=1`.
 
-No painel do LivePix, no app OAuth (client credentials):
+No painel do LivePix, nas credenciais do aplicativo:
 
 - escopos `payments:read`, `payments:write`, `subscriptions:read`, `subscriptions:write`, `subscription-plans:read`, `subscription-plans:write`
 - webhook `https://wlacdgwbwsykvpobkbib.supabase.co/functions/v1/livepix-webhook`

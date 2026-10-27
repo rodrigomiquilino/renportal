@@ -4,8 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PasswordField } from '@/components/PasswordField';
 import { FormError } from '@/components/FormError';
-import { AuthProviders, continueAfterSession } from '@/modules/auth/AuthProviders';
-import { authErrorMessage } from '@/lib/auth';
+import { authErrorMessage, continueAfterSession } from '@/lib/auth';
 import { rememberPreference, setRememberPreference, storeNext } from '@/lib/auth-storage';
 import { href } from '@/lib/paths';
 import { absoluteHref } from '@/lib/site';
@@ -79,7 +78,6 @@ export function LoginForm() {
 
   return (
     <form className="space-y-4" onSubmit={onSubmit}>
-      <AuthProviders remember={remember} />
       <div className="space-y-2">
         <Label htmlFor="email">E-mail</Label>
         <Input
