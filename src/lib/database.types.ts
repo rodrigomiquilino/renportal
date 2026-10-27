@@ -114,6 +114,7 @@ export type ShopItem = {
   asset_key: string;
   image_url: string | null;
   active: boolean;
+  supporter_only?: boolean;
 };
 
 export type UserItem = {
@@ -152,6 +153,8 @@ export type Profile = {
   profile_visibility?: ProfileVisibility;
   show_activity?: boolean;
   allow_friend_requests?: boolean;
+  supporter_until?: string | null;
+  show_support?: boolean;
   xp: number;
   level: number;
   total_play_time_seconds: number;
@@ -204,6 +207,7 @@ export type Database = {
           profile_visibility?: ProfileVisibility;
           show_activity?: boolean;
           allow_friend_requests?: boolean;
+          show_support?: boolean;
           xp?: number;
           level?: number;
           total_play_time_seconds?: number;
@@ -306,6 +310,7 @@ export type Database = {
           description?: string | null;
           image_url?: string | null;
           active?: boolean;
+          supporter_only?: boolean;
           id?: string;
         },
         {
@@ -316,6 +321,7 @@ export type Database = {
           asset_key?: string;
           image_url?: string | null;
           active?: boolean;
+          supporter_only?: boolean;
         }
       >;
       user_items: Table<UserItem, { user_id: string; item_id: string; acquired_at?: string }, { acquired_at?: string }>;
@@ -400,6 +406,87 @@ export type Database = {
         },
         { details?: string | null; reason?: ReportReason }
       >;
+      support_goal: Table<
+        { id: boolean; target_cents: number; label: string },
+        { id?: boolean; target_cents: number; label: string },
+        { target_cents?: number; label?: string }
+      >;
+      support_checkouts: Table<
+        {
+          id: string;
+          user_id: string;
+          kind: 'one_time' | 'subscription';
+          amount_cents: number;
+          livepix_reference: string | null;
+          status: 'pending' | 'paid';
+          created_at: string;
+        },
+        {
+          user_id: string;
+          kind: 'one_time' | 'subscription';
+          amount_cents: number;
+          livepix_reference?: string | null;
+          status?: 'pending' | 'paid';
+          id?: string;
+          created_at?: string;
+        },
+        { livepix_reference?: string | null; status?: 'pending' | 'paid' }
+      >;
+      support_payments: Table<
+        {
+          id: string;
+          user_id: string;
+          livepix_id: string;
+          livepix_reference: string | null;
+          kind: 'one_time' | 'subscription';
+          amount_cents: number;
+          currency: string;
+          proof: string | null;
+          paid_at: string;
+          created_at: string;
+        },
+        {
+          user_id: string;
+          livepix_id: string;
+          kind: 'one_time' | 'subscription';
+          amount_cents: number;
+          paid_at: string;
+          livepix_reference?: string | null;
+          currency?: string;
+          proof?: string | null;
+          id?: string;
+          created_at?: string;
+        },
+        { proof?: string | null }
+      >;
+      support_subscriptions: Table<
+        {
+          user_id: string;
+          livepix_subscription_id: string | null;
+          livepix_reference: string | null;
+          status: 'active' | 'pending' | 'cancelled';
+          renew_at: string | null;
+          amount_cents: number | null;
+          updated_at: string;
+        },
+        {
+          user_id: string;
+          livepix_subscription_id?: string | null;
+          livepix_reference?: string | null;
+          status?: 'active' | 'pending' | 'cancelled';
+          renew_at?: string | null;
+          amount_cents?: number | null;
+          updated_at?: string;
+        },
+        {
+          livepix_subscription_id?: string | null;
+          livepix_reference?: string | null;
+          status?: 'active' | 'pending' | 'cancelled';
+          renew_at?: string | null;
+          amount_cents?: number | null;
+          updated_at?: string;
+        }
+      >;
     };
     Views: {
       [_ in never]: never;
@@ -418,6 +505,14 @@ export type Database = {
         Returns: boolean;
       };
       admin_stats: {
+        Args: Record<string, never>;
+        Returns: Json;
+      };
+      support_month_summary: {
+        Args: Record<string, never>;
+        Returns: Json;
+      };
+      support_month_wall: {
         Args: Record<string, never>;
         Returns: Json;
       };

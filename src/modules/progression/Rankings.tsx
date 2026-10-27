@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Avatar } from '@/components/Avatar';
+import { SupporterBadge } from '@/components/SupporterBadge';
 import { useAuth } from '@/lib/auth';
 import { formatXp } from '@/lib/format';
 import { href } from '@/lib/paths';
+import { isSupporter } from '@/lib/support';
 import { supabase } from '@/lib/supabase';
 import type { Profile } from '@/lib/database.types';
 import { cn } from '@/lib/utils';
@@ -70,12 +72,14 @@ export function Rankings() {
         <ol className="mt-6 space-y-2">
           {rows.map((row, index) => {
             const mine = row.id === me?.id;
+            const supporter = isSupporter(row.supporter_until);
             return (
               <li key={row.id}>
                 <a
                   href={href(`/profile/?username=${encodeURIComponent(row.username)}`)}
                   className={cn(
                     'flex items-center gap-3 rounded-2xl border border-white/5 bg-card px-3 py-3 hover:border-accent/40 sm:px-4',
+                    supporter && 'border-[#e8c872]/35',
                     mine && 'border-accent/40',
                   )}
                 >
@@ -92,10 +96,13 @@ export function Rankings() {
                     size="sm"
                   />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium">
-                      {row.display_name}
+                    <p className="flex min-w-0 items-center gap-2">
+                      <span className={cn('truncate font-medium', supporter && 'supporter-name')}>
+                        {row.display_name}
+                      </span>
+                      <SupporterBadge until={row.supporter_until} />
                       {row.active_title ? (
-                        <span className="ml-2 text-xs font-medium text-accent">{row.active_title}</span>
+                        <span className="truncate text-xs font-medium text-accent">{row.active_title}</span>
                       ) : null}
                     </p>
                     <p className="truncate text-xs text-zinc-500">@{row.username}</p>

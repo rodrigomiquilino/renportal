@@ -105,7 +105,7 @@ export function ShopGrid() {
       <header>
         <h1 className="text-3xl font-semibold tracking-tight">Loja</h1>
         <p className="mt-2 max-w-2xl text-sm text-zinc-400">
-          Bordas, efeitos e títulos saem do seu XP. O débito acontece no servidor.
+          Bordas, efeitos e títulos saem do seu XP. A moldura de Apoiador vem do plano, não do saldo.
           {profile ? ` Você tem ${formatXp(Number(profile.xp))} XP.` : ''}
         </p>
       </header>
@@ -148,10 +148,16 @@ export function ShopGrid() {
                       </div>
                       <p className="mt-3 text-sm text-zinc-400">{item.description}</p>
                       <div className="mt-4 flex items-center justify-between gap-2">
-                        <span className="text-sm font-semibold text-accent">{formatXp(item.cost_xp)} XP</span>
+                        {item.supporter_only ? (
+                          <span className="text-sm font-semibold text-[#e8c872]">Apoiador</span>
+                        ) : (
+                          <span className="text-sm font-semibold text-accent">{formatXp(item.cost_xp)} XP</span>
+                        )}
                         {!session ? (
                           <Button asChild size="sm" variant="secondary">
-                            <a href={href('/login')}>Entrar para comprar</a>
+                            <a href={item.supporter_only ? href('/apoiar/') : href('/login')}>
+                              {item.supporter_only ? 'Ver o plano' : 'Entrar para comprar'}
+                            </a>
                           </Button>
                         ) : mine ? (
                           <Button
@@ -161,6 +167,10 @@ export function ShopGrid() {
                             onClick={() => equip(item)}
                           >
                             {equipped ? 'Remover' : 'Usar'}
+                          </Button>
+                        ) : item.supporter_only ? (
+                          <Button asChild size="sm" variant="secondary">
+                            <a href={href('/apoiar/')}>Ver o plano</a>
                           </Button>
                         ) : (
                           <Button

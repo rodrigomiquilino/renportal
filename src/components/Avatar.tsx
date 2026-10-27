@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 const frames: Record<string, string> = {
   'border-violet': 'cosmetic-border-violet',
   'border-aurora': 'cosmetic-border-aurora',
+  'border-apoiador': 'cosmetic-border-apoiador',
 };
 
 const effects: Record<string, string> = {

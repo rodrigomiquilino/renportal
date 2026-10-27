@@ -7,12 +7,14 @@ import { FeedbackAdmin } from '@/modules/admin/FeedbackAdmin';
 import { UsersAdmin } from '@/modules/admin/UsersAdmin';
 import { ShopAdmin } from '@/modules/admin/ShopAdmin';
 import { StatsAdmin } from '@/modules/admin/StatsAdmin';
+import { SupportAdmin } from '@/modules/admin/SupportAdmin';
 
 const tabs = [
   ['games', 'Jogos'],
   ['feedback', 'Feedback'],
   ['users', 'Usuários'],
   ['shop', 'Loja'],
+  ['support', 'Apoios'],
   ['stats', 'Números'],
 ] as const;
 
@@ -54,7 +56,7 @@ export function AdminApp() {
     <div className="space-y-5">
       <header>
         <h1 className="text-3xl font-semibold tracking-tight">Admin</h1>
-        <p className="mt-1 text-sm text-zinc-400">Jogos, moderação, papéis e a loja.</p>
+        <p className="mt-1 text-sm text-zinc-400">Jogos, moderação, papéis, a loja e os apoios.</p>
       </header>
       <div className="flex flex-wrap gap-2" role="tablist" aria-label="Seções do admin">
         {tabs.map(([id, label]) => (
@@ -77,6 +79,7 @@ export function AdminApp() {
       {tab === 'feedback' ? <FeedbackAdmin /> : null}
       {tab === 'users' ? <UsersAdmin /> : null}
       {tab === 'shop' ? <ShopAdmin /> : null}
+      {tab === 'support' ? <SupportAdmin /> : null}
       {tab === 'stats' ? <StatsAdmin /> : null}
     </div>
   );

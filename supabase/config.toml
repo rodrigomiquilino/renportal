@@ -28,3 +28,11 @@ verify_jwt = false
 # OPTIONS sem JWT. A função chama readUser e só apaga o dono do token.
 [functions.delete-account]
 verify_jwt = false
+
+# O navegador chama com JWT; a função confere em readUser.
+[functions.livepix-checkout]
+verify_jwt = false
+
+# O LivePix chama sem JWT. A função reconsulta o pagamento na API antes de creditar.
+[functions.livepix-webhook]
+verify_jwt = false

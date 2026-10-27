@@ -3,6 +3,7 @@ import DashboardLayout from '../layouts/DashboardLayout.astro'
 import { HeroActions } from '../modules/layout/HeroActions'
 import { GameCatalog } from '../modules/games/GameCatalog'
 import { ContinuePlaying } from '../modules/progression/ContinuePlaying'
+import { SupportMeter } from '../modules/support/SupportMeter'
 import { features } from '../lib/features'
 ---
 
@@ -46,6 +47,10 @@ import { features } from '../lib/features'
       </dl>
     </div>
   </section>
+
+  <div class="mt-8">
+    <SupportMeter client:load />
+  </div>
 
   {features.progression && (
     <div class="mt-8">

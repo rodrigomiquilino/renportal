@@ -3,7 +3,10 @@ import { useAuth } from '@/lib/auth';
 import { formatPlayTime, formatXp } from '@/lib/format';
 import { levelProgress } from '@/lib/level';
 import { Avatar } from '@/components/Avatar';
+import { SupporterBadge } from '@/components/SupporterBadge';
 import { Button } from '@/components/ui/button';
+import { isSupporter } from '@/lib/support';
+import { cn } from '@/lib/utils';
 import { EditProfileDialog } from '@/modules/auth/EditProfileDialog';
 
 /** Cartão de nível, barra de XP e cosméticos ativos. */
@@ -48,7 +51,12 @@ export function ProfileCard() {
           effect={profile.active_effect}
         />
         <div className="min-w-0">
-          <p className="truncate font-semibold">{profile.display_name}</p>
+          <p className="flex min-w-0 items-center gap-2">
+            <span className={cn('truncate font-semibold', isSupporter(profile.supporter_until) && 'supporter-name')}>
+              {profile.display_name}
+            </span>
+            <SupporterBadge until={profile.supporter_until} />
+          </p>
           <p className="truncate text-sm text-zinc-400">@{profile.username}</p>
           {profile.active_title ? (
             <p className="mt-0.5 truncate text-xs font-medium text-accent">{profile.active_title}</p>
