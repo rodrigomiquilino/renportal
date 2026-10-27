@@ -1,0 +1,8 @@
+---
+import AuthLayout from '../layouts/AuthLayout.astro'
+import { ResetForm } from '../modules/auth/ResetForm'
+---
+
+<AuthLayout title="Nova senha" heading="Nova senha" lede="Escolha uma senha que você ainda não usou aqui.">
+  <ResetForm client:load />
+</AuthLayout>

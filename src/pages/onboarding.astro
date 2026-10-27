@@ -1,0 +1,8 @@
+---
+import AuthLayout from '../layouts/AuthLayout.astro'
+import { OnboardingForm } from '../modules/auth/OnboardingForm'
+---
+
+<AuthLayout title="Seu perfil" heading="Como as pessoas te veem" lede="Escolha um rosto e o nome que aparece no chat. Dá para mudar depois.">
+  <OnboardingForm client:load />
+</AuthLayout>

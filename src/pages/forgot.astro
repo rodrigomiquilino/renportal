@@ -1,0 +1,8 @@
+---
+import AuthLayout from '../layouts/AuthLayout.astro'
+import { ForgotForm } from '../modules/auth/ForgotForm'
+---
+
+<AuthLayout title="Esqueci a senha" heading="Esqueci a senha" lede="Te mando um link para escolher outra. O link vale por pouco tempo.">
+  <ForgotForm client:load />
+</AuthLayout>
