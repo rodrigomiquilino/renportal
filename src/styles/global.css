@@ -47,6 +47,16 @@
     0 0 22px rgb(139 92 246 / 0.45);
 }
 
+.cosmetic-border-apoiador {
+  box-shadow:
+    0 0 0 2px #e8c872,
+    0 0 18px rgb(232 200 114 / 0.45);
+}
+
+.supporter-name {
+  color: #e8c872;
+}
+
 .cosmetic-border-aurora {
   box-shadow:
     0 0 0 2px transparent,

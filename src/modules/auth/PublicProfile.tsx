@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Avatar } from '@/components/Avatar';
+import { SupporterBadge } from '@/components/SupporterBadge';
 import { formatDate, formatPlayTime, formatXp } from '@/lib/format';
 import { levelProgress } from '@/lib/level';
 import { href } from '@/lib/paths';
@@ -13,6 +14,8 @@ import { DonationPanel } from '@/modules/donations/DonationPanel';
 import { ReportUserDialog } from '@/modules/auth/ReportUserDialog';
 import { authErrorMessage } from '@/lib/auth';
 import { toast } from '@/lib/toast';
+import { isSupporter } from '@/lib/support';
+import { cn } from '@/lib/utils';
 
 type Status = 'loading' | 'ready' | 'empty' | 'missing' | 'error';
 
@@ -153,7 +156,12 @@ export function PublicProfile({ username }: { username?: string }) {
 
   return (
     <div className="space-y-4">
-      <article className="overflow-hidden rounded-2xl border border-white/5 bg-card">
+      <article
+        className={cn(
+          'overflow-hidden rounded-2xl border border-white/5 bg-card',
+          isSupporter(profile.supporter_until) && 'border-[#e8c872]/35',
+        )}
+      >
         {resolveMediaUrl(profile.banner_url) ? (
           <img src={resolveMediaUrl(profile.banner_url) ?? ''} alt="" className="h-36 w-full object-cover" />
         ) : null}
@@ -170,7 +178,12 @@ export function PublicProfile({ username }: { username?: string }) {
               <p className="text-xs font-semibold tracking-[0.16em] text-accent uppercase">
                 {profile.active_title || 'Jogador'}
               </p>
-              <h1 className="mt-1 text-3xl font-semibold tracking-tight">{profile.display_name}</h1>
+              <h1 className="mt-1 flex flex-wrap items-center gap-2 text-3xl font-semibold tracking-tight">
+                <span className={cn(isSupporter(profile.supporter_until) && 'supporter-name')}>
+                  {profile.display_name}
+                </span>
+                <SupporterBadge until={profile.supporter_until} />
+              </h1>
               <p className="text-zinc-400">@{profile.username}</p>
             </div>
           </div>

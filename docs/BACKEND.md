@@ -52,3 +52,34 @@ Redirect dos apps OAuth: `https://wlacdgwbwsykvpobkbib.supabase.co/auth/v1/callb
 ## 4. O que não vai no Git
 
 Senha do banco, service role e tokens continuam fora do repositório.
+
+## 5. Apoios com LivePix
+
+A 012 depende da 011 (`profile_visibility` no mural). Se a 011 ainda não rodou, aplique ela antes.
+
+No SQL Editor, o conteúdo de `supabase/migrations/012_livepix.sql`. Ela é idempotente. Cria `supporter_until` e `show_support` no perfil, a meta mensal, os checkouts, os pagamentos, a assinatura, o crédito `credit_support_payment` (só `service_role`) e os itens de loja exclusivos do plano. O mês é calculado em `America/Sao_Paulo` na hora da leitura. Não há cron.
+
+```bash
+supabase db query --linked -f supabase/migrations/012_livepix.sql
+supabase functions deploy livepix-checkout --project-ref wlacdgwbwsykvpobkbib
+supabase functions deploy livepix-webhook --project-ref wlacdgwbwsykvpobkbib
+```
+
+`verify_jwt` fica `false` nas duas. O checkout confere o JWT no código. O webhook não tem JWT: o LivePix chama de fora.
+
+Secrets da função, sem valor no repositório:
+
+```bash
+supabase secrets set LIVEPIX_CLIENT_ID=… LIVEPIX_CLIENT_SECRET=… --project-ref wlacdgwbwsykvpobkbib
+```
+
+Opcional, se o site não for o GitHub Pages: `PUBLIC_SITE_URL` e `PUBLIC_BASE_PATH`. O padrão do checkout é `https://rodrigomiquilino.github.io` e `/renportal`. A volta depois do Pix é `/renportal/apoiar/?retorno=1`.
+
+No painel do LivePix, no app OAuth (client credentials):
+
+- escopos `payments:read`, `payments:write`, `subscriptions:read`, `subscriptions:write`, `subscription-plans:read`, `subscription-plans:write`
+- webhook `https://wlacdgwbwsykvpobkbib.supabase.co/functions/v1/livepix-webhook`
+
+A API não assina o webhook. A função reconsulta o pagamento ou a assinatura com o token e só então credita. O id do pagamento é a chave de idempotência. O plano `apoiador` de R$ 0,99/mês é criado na primeira assinatura, se ainda não existir. Não altere o valor de um plano que já tenha assinante.
+
+Doação avulsa mínima é R$ 1,00 porque `POST /v2/payments` exige pelo menos 100 centavos. Ela entra na meta e no mural e não liga o selo.
