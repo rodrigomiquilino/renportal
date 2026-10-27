@@ -6,15 +6,17 @@ type GameInput = {
   title?: string
   description?: string | null
   cover_url?: string | null
-  web_path?: string
+  web_path?: string | null
+  web_url?: string | null
   windows_url?: string | null
   mac_url?: string | null
   linux_url?: string | null
   file_size_mb?: number | null
+  version?: string | null
   published?: boolean
 }
 
-const platforms = new Set(['windows', 'mac', 'linux'])
+const platforms = new Set(['windows', 'mac', 'linux', 'web'])
 
 function safeName(value: string) {
   return value.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 120)
@@ -47,20 +49,22 @@ Deno.serve(async (req) => {
   let saved: GameInput | null = null
   if (body.game) {
     const game = body.game
-    if (!game.slug || !game.title || !game.web_path) {
-      return json({ error: 'slug, title e web_path são obrigatórios' }, 400)
+    if (!game.slug || !game.title) {
+      return json({ error: 'slug e title são obrigatórios' }, 400)
     }
     const row = {
       slug: game.slug,
       title: game.title,
       description: game.description ?? null,
       cover_url: game.cover_url ?? null,
-      web_path: game.web_path,
+      web_path: game.web_path ?? null,
+      web_url: game.web_url ?? null,
       windows_url: game.windows_url ?? null,
       mac_url: game.mac_url ?? null,
       linux_url: game.linux_url ?? null,
       file_size_mb: game.file_size_mb ?? null,
-      published: game.published ?? true,
+      version: game.version ?? null,
+      published: game.published ?? false,
     }
     const query = game.id && isUuid(game.id)
       ? auth.ctx.admin.from('games').update(row).eq('id', game.id).select('*').single()
