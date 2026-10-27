@@ -22,6 +22,8 @@ A trava mora no banco. Cada tabela tem RLS. Quem está logado nem recebe permiss
 
 O chat me segurou mais do que eu esperava. Mensagem nova chega na hora, só para quem está naquela conversa. O "está digitando" e o ponto verde de online não vão para uma tabela. Somem quando a pessoa fecha a aba. Apagar não some com a linha. A bolha vira "Mensagem apagada".
 
+A foto do perfil é um arquivo, ou um dos desenhos prontos. Cansei de pedir URL. No admin, o jogo entra com o zip e a capa: se o Ren'Py trouxer `options.rpy`, o nome e a versão já vêm lidos. O login aceita senha, link no e-mail e, quando eu ligo no Supabase, GitHub e Google.
+
 Separei o portal em módulos. Loja, chat, painel de admin e doação podem sair do menu com uma flag no build, sem eu arrancar a pasta. A demo, Estação Aurora, imita um jogo Ren'Py e mostra o marco da história. Ela não dá XP. XP é tempo, e tempo passa pelo servidor.
 
 Levei daqui uma coisa simples. Saldo não se protege com um if no cliente. E página estática, de graça, aguenta o produto quando o que muda mora numa API.

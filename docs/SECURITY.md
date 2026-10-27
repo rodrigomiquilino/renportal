@@ -79,3 +79,7 @@ O painel some para quem não tem `role = admin`. Isso é conveniência de UI. A 
 ## O que este documento não cobre
 
 Não há revisão formal de penetração. Não há WAF na frente do GitHub Pages. A chave publishable é pública de propósito: com ela dá para chamar a API como um visitante, e o RLS é o limite. Girar a service role no painel e atualizar o secret da função é o procedimento se ela vazar.
+
+O GitHub Pages não deixa definir cabeçalho HTTP. O `BaseLayout` manda um Content-Security-Policy por meta tag: script e estilo do próprio site, conexão só com o Supabase do projeto, imagem em `data:` e `blob:` para a prévia local.
+
+Avatar e banner só passam no trigger se forem um preset (`preset:fox`) ou a URL pública do arquivo em `avatars/<id do usuário>/`. Capa e imagem da loja só sobem com `is_admin()`. O chat tira tags no trigger e corta em 20 mensagens por minuto. Pedido de amizade tem teto de 15 por hora. XP, compra e doação seguem só nas funções `security definer`.
