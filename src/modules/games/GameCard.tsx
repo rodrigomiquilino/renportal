@@ -1,8 +1,8 @@
-import { assetUrl, href } from '@/lib/paths'
-import type { Game } from '@/lib/database.types'
+import { assetUrl, href } from '@/lib/paths';
+import type { Game } from '@/lib/database.types';
 
 export function GameCard({ game }: { game: Game }) {
-  const cover = game.cover_url ? assetUrl(game.cover_url) : null
+  const cover = game.cover_url ? assetUrl(game.cover_url) : null;
 
   return (
     <a
@@ -11,10 +11,19 @@ export function GameCard({ game }: { game: Game }) {
     >
       <div className="relative aspect-[16/10] bg-[#101018]">
         {cover ? (
-          <img src={cover} alt="" className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]" />
+          <img
+            src={cover}
+            alt=""
+            className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+          />
         ) : (
-          <div className="grid h-full place-items-center text-3xl font-semibold text-accent">{game.title.slice(0, 1)}</div>
+          <div className="grid h-full place-items-center text-3xl font-semibold text-accent">
+            {game.title.slice(0, 1)}
+          </div>
         )}
+        {game.content_rating === 'mature' ? (
+          <span className="absolute top-3 left-3 rounded-full bg-black/70 px-2 py-0.5 text-xs font-semibold">18+</span>
+        ) : null}
       </div>
       <div className="flex flex-1 flex-col p-4">
         <h3 className="font-semibold tracking-tight">{game.title}</h3>
@@ -23,5 +32,5 @@ export function GameCard({ game }: { game: Game }) {
         </p>
       </div>
     </a>
-  )
+  );
 }

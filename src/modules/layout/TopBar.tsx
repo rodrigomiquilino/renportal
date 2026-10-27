@@ -1,23 +1,23 @@
-import { LogOut, Menu } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Avatar } from '@/components/Avatar'
-import { useAuth } from '@/lib/auth'
-import { features } from '@/lib/features'
-import { href } from '@/lib/paths'
-import { supabase } from '@/lib/supabase'
-import { ProfileCard } from '@/modules/layout/ProfileCard'
-import { Sidebar } from '@/modules/layout/Sidebar'
-import { useState } from 'react'
+import { LogOut, Menu } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Avatar } from '@/components/Avatar';
+import { useAuth } from '@/lib/auth';
+import { features } from '@/lib/features';
+import { href } from '@/lib/paths';
+import { supabase } from '@/lib/supabase';
+import { ProfileCard } from '@/modules/layout/ProfileCard';
+import { Sidebar } from '@/modules/layout/Sidebar';
+import { useState } from 'react';
 
 export function TopBar() {
-  const { session, profile } = useAuth()
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [profileOpen, setProfileOpen] = useState(false)
+  const { session, profile } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   async function logout() {
-    await supabase.auth.signOut()
-    window.location.href = href('/')
+    await supabase.auth.signOut({ scope: 'local' });
+    window.location.href = href('/');
   }
 
   return (
@@ -40,7 +40,10 @@ export function TopBar() {
       </div>
 
       {features.games ? (
-        <form action={href('/games/')} className="mx-auto hidden min-w-0 flex-1 md:block">
+        <form
+          action={href('/games/')}
+          className="order-last w-full min-w-0 md:order-none md:mx-auto md:w-auto md:flex-1"
+        >
           <label htmlFor="game-search" className="sr-only">
             Buscar jogos
           </label>
@@ -65,7 +68,13 @@ export function TopBar() {
                   className="flex items-center gap-2 rounded-full border border-white/5 bg-card py-1 pr-3 pl-1 xl:hidden"
                   aria-label={`Abrir progresso, nível ${profile.level}`}
                 >
-                  <Avatar name={profile.display_name} url={profile.avatar_url} border={profile.active_border} effect={profile.active_effect} size="sm" />
+                  <Avatar
+                    name={profile.display_name}
+                    url={profile.avatar_url}
+                    border={profile.active_border}
+                    effect={profile.active_effect}
+                    size="sm"
+                  />
                   <span className="hidden text-sm font-medium sm:inline">Nível {profile.level}</span>
                 </button>
               </DialogTrigger>
@@ -76,7 +85,7 @@ export function TopBar() {
                 <ProfileCard />
               </DialogContent>
             </Dialog>
-            <Button variant="ghost" size="sm" onClick={logout} aria-label="Sair da conta">
+            <Button variant="ghost" size="sm" onClick={logout} aria-label="Sair neste aparelho">
               <LogOut className="h-4 w-4" aria-hidden />
               <span className="hidden sm:inline">Sair</span>
             </Button>
@@ -88,5 +97,5 @@ export function TopBar() {
         )}
       </div>
     </header>
-  )
+  );
 }

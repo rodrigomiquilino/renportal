@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" role="img" aria-label="Raposa">
+  <rect width="80" height="80" rx="40" fill="#1c1428"/>
+  <path d="M18 28 L28 14 L36 30 L40 22 L44 30 L52 14 L62 28 L56 46 L40 58 L24 46 Z" fill="#8b5cf6"/>
+  <circle cx="33" cy="40" r="3" fill="#0c0c12"/>
+  <circle cx="47" cy="40" r="3" fill="#0c0c12"/>
+</svg>

@@ -16,6 +16,19 @@ const base = import.meta.env.BASE_URL
 const origin = Astro.site ?? new URL('https://rodrigomiquilino.github.io')
 const canonical = new URL(Astro.url.pathname + Astro.url.search, origin).href
 const ogImage = new URL('og.png', new URL(base, origin)).href
+const supabaseOrigin = (import.meta.env.PUBLIC_SUPABASE_URL || 'https://wlacdgwbwsykvpobkbib.supabase.co').replace(/\/$/, '')
+const csp = [
+  "default-src 'self'",
+  `img-src 'self' data: blob: ${supabaseOrigin}`,
+  `media-src 'self' blob: ${supabaseOrigin}`,
+  `connect-src 'self' ${supabaseOrigin} ${supabaseOrigin.replace('https://', 'wss://')}`,
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "font-src 'self' https://fonts.gstatic.com data:",
+  "script-src 'self' 'unsafe-inline'",
+  `frame-src 'self' ${supabaseOrigin}`,
+  "base-uri 'self'",
+  "form-action 'self'",
+].join('; ')
 ---
 
 <!doctype html>
@@ -26,6 +39,7 @@ const ogImage = new URL('og.png', new URL(base, origin)).href
     <meta name="description" content={description} />
     <meta name="author" content="Rodrigo Miquilino" />
     <meta name="theme-color" content="#0c0c12" />
+    <meta http-equiv="Content-Security-Policy" content={csp} />
     <link rel="canonical" href={canonical} />
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
     <link rel="apple-touch-icon" href={`${base}favicon.svg`} />

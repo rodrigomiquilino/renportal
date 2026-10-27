@@ -1,0 +1,8 @@
+---
+import AuthLayout from '../layouts/AuthLayout.astro'
+import { ConfirmEmail } from '../modules/auth/ConfirmEmail'
+---
+
+<AuthLayout title="Confirme seu e-mail" heading="Confirme seu e-mail" lede="A conta só abre depois desse passo, se a confirmação estiver ligada.">
+  <ConfirmEmail client:load />
+</AuthLayout>

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" role="img" aria-label="Livro">
+  <rect width="80" height="80" rx="40" fill="#1a1424"/>
+  <path d="M22 24 h16 c4 4 4 28 0 32 H22 z" fill="#8b5cf6"/>
+  <path d="M58 24 H42 c-4 4 -4 28 0 32 h16 z" fill="#6d28d9"/>
+</svg>

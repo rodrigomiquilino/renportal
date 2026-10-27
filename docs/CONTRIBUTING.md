@@ -6,7 +6,7 @@ RenPortal é um projeto de portfólio. Issues e pull requests são bem-vindos qu
 
 Node >=22.23.4 (exigência do Astro 7). O deploy no GitHub Pages usa Node 24. `npm install`, depois `npm run dev -- --host 127.0.0.1 --port 4455`. O padrão abre em `/renportal/`.
 
-`npm run typecheck` precisa passar. `npm run build` também, porque o alvo é site estático.
+`npm run typecheck` precisa passar. `npm test` cobre nível, senha, slug e a leitura do zip. `npm run lint` e `npm run format:check` também. `npm run build` gera o site estático. O checklist do Supabase está em [BACKEND.md](BACKEND.md).
 
 ## O que não entra no commit
 

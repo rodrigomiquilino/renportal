@@ -1,40 +1,51 @@
-import { useEffect, useState } from 'react'
-import { Avatar } from '@/components/Avatar'
-import { useAuth } from '@/lib/auth'
-import { formatXp } from '@/lib/format'
-import { href } from '@/lib/paths'
-import { supabase } from '@/lib/supabase'
-import type { Profile } from '@/lib/database.types'
-import { cn } from '@/lib/utils'
+import { useEffect, useState } from 'react';
+import { Avatar } from '@/components/Avatar';
+import { SupporterBadge } from '@/components/SupporterBadge';
+import { useAuth } from '@/lib/auth';
+import { formatXp } from '@/lib/format';
+import { href } from '@/lib/paths';
+import { isSupporter } from '@/lib/support';
+import { supabase } from '@/lib/supabase';
+import type { Profile } from '@/lib/database.types';
+import { cn } from '@/lib/utils';
 
 export function Rankings() {
-  const { profile: me } = useAuth()
-  const [rows, setRows] = useState<Profile[]>([])
-  const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
+  const { profile: me } = useAuth();
+  const [rows, setRows] = useState<Profile[]>([]);
+  const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
 
   useEffect(() => {
-    let cancelled = false
+    let cancelled = false;
     supabase
       .from('profiles')
       .select('*')
+      .eq('show_activity', true)
+      .neq('profile_visibility', 'private')
       .order('xp', { ascending: false })
       .limit(50)
-      .then(({ data, error }) => {
-        if (cancelled) return
+      .then(async ({ data, error }) => {
+        if (cancelled) return;
         if (error) {
-          setStatus('error')
-          return
+          const fallback = await supabase.from('profiles').select('*').order('xp', { ascending: false }).limit(50);
+          if (cancelled) return;
+          if (fallback.error) {
+            setStatus('error');
+            return;
+          }
+          setRows(fallback.data ?? []);
+          setStatus('ready');
+          return;
         }
-        setRows(data ?? [])
-        setStatus('ready')
-      })
+        setRows(data ?? []);
+        setStatus('ready');
+      });
     return () => {
-      cancelled = true
-    }
-  }, [])
+      cancelled = true;
+    };
+  }, []);
 
   if (status === 'loading') {
-    return <div className="h-64 animate-pulse rounded-2xl border border-white/5 bg-card" />
+    return <div className="h-64 animate-pulse rounded-2xl border border-white/5 bg-card" />;
   }
 
   if (status === 'error') {
@@ -43,31 +54,38 @@ export function Rankings() {
         <h1 className="text-2xl font-semibold">Ranking indisponível</h1>
         <p className="mt-2 text-sm text-zinc-400">Não foi possível ler os perfis. Confira a migration base.</p>
       </section>
-    )
+    );
   }
 
   return (
     <section>
       <h1 className="text-3xl font-semibold tracking-tight">Rankings</h1>
       <p className="mt-2 max-w-2xl text-sm text-zinc-400">
-        Os 50 jogadores com mais XP. O nível segue a raiz do XP: 40 pontos separam o nível 1 do 2.
+        Os 50 jogadores com mais XP que deixam a atividade visível. O nível segue a raiz do XP: 40 pontos separam o
+        nível 1 do 2.
       </p>
       {rows.length === 0 ? (
-        <p className="mt-6 rounded-2xl border border-white/5 bg-card px-5 py-8 text-sm text-zinc-400">Ainda não há jogadores.</p>
+        <p className="mt-6 rounded-2xl border border-white/5 bg-card px-5 py-8 text-sm text-zinc-400">
+          Ainda não há jogadores.
+        </p>
       ) : (
         <ol className="mt-6 space-y-2">
           {rows.map((row, index) => {
-            const mine = row.id === me?.id
+            const mine = row.id === me?.id;
+            const supporter = isSupporter(row.supporter_until);
             return (
               <li key={row.id}>
                 <a
                   href={href(`/profile/?username=${encodeURIComponent(row.username)}`)}
                   className={cn(
                     'flex items-center gap-3 rounded-2xl border border-white/5 bg-card px-3 py-3 hover:border-accent/40 sm:px-4',
+                    supporter && 'border-[#e8c872]/35',
                     mine && 'border-accent/40',
                   )}
                 >
-                  <span className={cn('w-8 text-center text-sm font-semibold', index < 3 ? 'text-accent' : 'text-zinc-500')}>
+                  <span
+                    className={cn('w-8 text-center text-sm font-semibold', index < 3 ? 'text-accent' : 'text-zinc-500')}
+                  >
                     {index + 1}
                   </span>
                   <Avatar
@@ -78,9 +96,14 @@ export function Rankings() {
                     size="sm"
                   />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium">
-                      {row.display_name}
-                      {row.active_title ? <span className="ml-2 text-xs font-medium text-accent">{row.active_title}</span> : null}
+                    <p className="flex min-w-0 items-center gap-2">
+                      <span className={cn('truncate font-medium', supporter && 'supporter-name')}>
+                        {row.display_name}
+                      </span>
+                      <SupporterBadge until={row.supporter_until} />
+                      {row.active_title ? (
+                        <span className="truncate text-xs font-medium text-accent">{row.active_title}</span>
+                      ) : null}
                     </p>
                     <p className="truncate text-xs text-zinc-500">@{row.username}</p>
                   </div>
@@ -90,10 +113,10 @@ export function Rankings() {
                   </div>
                 </a>
               </li>
-            )
+            );
           })}
         </ol>
       )}
     </section>
-  )
+  );
 }

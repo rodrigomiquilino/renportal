@@ -4,9 +4,14 @@
  * Auth é dependência de base e permanece sempre ativo.
  */
 function enabled(value: string | undefined): boolean {
-  if (value === undefined || value === '') return true
-  return value === 'true' || value === '1'
+  if (value === undefined || value === '') return true;
+  return value === 'true' || value === '1';
 }
+
+export const authProviders = {
+  github: enabled(import.meta.env.PUBLIC_AUTH_GITHUB),
+  google: enabled(import.meta.env.PUBLIC_AUTH_GOOGLE),
+} as const;
 
 export const features = {
   auth: true,
@@ -17,9 +22,9 @@ export const features = {
   chat: enabled(import.meta.env.PUBLIC_FEATURE_CHAT),
   admin: enabled(import.meta.env.PUBLIC_FEATURE_ADMIN),
   donations: enabled(import.meta.env.PUBLIC_FEATURE_DONATIONS),
-} as const
+} as const;
 
-export type FeatureKey = keyof typeof features
+export type FeatureKey = keyof typeof features;
 
 export const featureEnv: Record<Exclude<FeatureKey, 'auth'>, string> = {
   games: 'PUBLIC_FEATURE_GAMES',
@@ -29,4 +34,4 @@ export const featureEnv: Record<Exclude<FeatureKey, 'auth'>, string> = {
   chat: 'PUBLIC_FEATURE_CHAT',
   admin: 'PUBLIC_FEATURE_ADMIN',
   donations: 'PUBLIC_FEATURE_DONATIONS',
-}
+};

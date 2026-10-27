@@ -101,6 +101,8 @@ Cada pasta em `src/modules/` é independente. Só auth é dependência dos outro
 | Admin | `PUBLIC_FEATURE_ADMIN` | `007_admin.sql`, function `admin-upload-game` e `role = 'admin'`. |
 | Doações de XP | `PUBLIC_FEATURE_DONATIONS` | `008_donations.sql` e a function `donate-xp`. |
 
+O que ainda depende do painel do Supabase (migrations 009 e 010, function de upload, GitHub, Google e URLs de redirect) está em [docs/BACKEND.md](docs/BACKEND.md).
+
 ## Como rodar localmente
 
 ```bash
@@ -113,6 +115,7 @@ Com o `.env.example`, o app abre em `http://127.0.0.1:4455/renportal/`. Para ser
 
 - `npm run build` gera `dist/`
 - `npm run typecheck` roda `astro check`
+- `npm test`, `npm run lint` e `npm run format:check` são o que a CI roda no pull request
 
 A URL e a chave publishable já são o padrão do cliente. O `.env` é opcional se você aceita esses valores.
 

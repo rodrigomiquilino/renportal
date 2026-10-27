@@ -1,19 +1,20 @@
-import { Download } from 'lucide-react'
-import { formatSize } from '@/lib/format'
-import type { Game } from '@/lib/database.types'
+import { Download } from 'lucide-react';
+import { formatSize } from '@/lib/format';
+import type { Game } from '@/lib/database.types';
 
 const platforms = [
   { key: 'windows_url', label: 'Windows' },
   { key: 'mac_url', label: 'macOS' },
   { key: 'linux_url', label: 'Linux' },
-] as const
+  { key: 'web_url', label: 'Web' },
+] as const;
 
 export function GameDownloads({ game }: { game: Game }) {
   const links = platforms.flatMap((platform) => {
-    const url = game[platform.key]
-    return url ? [{ ...platform, url }] : []
-  })
-  const size = formatSize(game.file_size_mb)
+    const url = game[platform.key];
+    return url ? [{ ...platform, url }] : [];
+  });
+  const size = formatSize(game.file_size_mb);
 
   return (
     <section className="rounded-2xl border border-white/5 bg-card p-5">
@@ -39,5 +40,5 @@ export function GameDownloads({ game }: { game: Game }) {
         </ul>
       )}
     </section>
-  )
+  );
 }

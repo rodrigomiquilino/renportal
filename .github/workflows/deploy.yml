@@ -53,6 +53,8 @@ jobs:
           PUBLIC_FEATURE_CHAT: ${{ vars.PUBLIC_FEATURE_CHAT }}
           PUBLIC_FEATURE_ADMIN: ${{ vars.PUBLIC_FEATURE_ADMIN }}
           PUBLIC_FEATURE_DONATIONS: ${{ vars.PUBLIC_FEATURE_DONATIONS }}
+          PUBLIC_AUTH_GITHUB: ${{ vars.PUBLIC_AUTH_GITHUB }}
+          PUBLIC_AUTH_GOOGLE: ${{ vars.PUBLIC_AUTH_GOOGLE }}
         run: npm run build
 
       - name: Artefato do Pages

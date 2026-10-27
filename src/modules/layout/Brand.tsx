@@ -1,4 +1,4 @@
-import { href } from '@/lib/paths'
+import { href } from '@/lib/paths';
 
 export function Brand() {
   return (
@@ -8,5 +8,5 @@ export function Brand() {
       </span>
       <span className="text-lg font-semibold tracking-tight">RenPortal</span>
     </a>
-  )
+  );
 }
