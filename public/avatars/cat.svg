@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" role="img" aria-label="Gato">
+  <rect width="80" height="80" rx="40" fill="#20182a"/>
+  <path d="M22 36 L28 18 L36 34 L44 34 L52 18 L58 36 L58 52 a18 14 0 0 1 -36 0 z" fill="#a78bfa"/>
+  <circle cx="34" cy="44" r="2.4" fill="#0c0c12"/>
+  <circle cx="46" cy="44" r="2.4" fill="#0c0c12"/>
+</svg>
