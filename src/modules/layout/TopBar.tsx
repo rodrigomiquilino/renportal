@@ -16,7 +16,7 @@ export function TopBar() {
   const [profileOpen, setProfileOpen] = useState(false);
 
   async function logout() {
-    await supabase.auth.signOut();
+    await supabase.auth.signOut({ scope: 'local' });
     window.location.href = href('/');
   }
 
@@ -85,7 +85,7 @@ export function TopBar() {
                 <ProfileCard />
               </DialogContent>
             </Dialog>
-            <Button variant="ghost" size="sm" onClick={logout} aria-label="Sair da conta">
+            <Button variant="ghost" size="sm" onClick={logout} aria-label="Sair neste aparelho">
               <LogOut className="h-4 w-4" aria-hidden />
               <span className="hidden sm:inline">Sair</span>
             </Button>

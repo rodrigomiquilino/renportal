@@ -4,7 +4,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar } from '@/components/Avatar';
 import { FormError } from '@/components/FormError';
-import { authErrorMessage, refreshProfile, useAuth } from '@/lib/auth';
+import { authErrorMessage, refreshProfile, useRequireSession } from '@/lib/auth';
+import { consumeNext } from '@/lib/auth-storage';
 import { fitImage } from '@/lib/image';
 import { href } from '@/lib/paths';
 import { avatarPresets, presetValue } from '@/lib/presets';
@@ -12,7 +13,7 @@ import { supabase } from '@/lib/supabase';
 import { explainUploadError, uploadToBucket } from '@/lib/upload';
 
 export function OnboardingForm() {
-  const { session, profile, loading } = useAuth();
+  const { session, profile, loading, error: profileError } = useRequireSession();
   const [name, setName] = useState('');
   const [preset, setPreset] = useState<string>(presetValue('fox'));
   const [file, setFile] = useState<File | null>(null);
@@ -22,6 +23,12 @@ export function OnboardingForm() {
   useEffect(() => {
     if (profile) setName((current) => current || profile.display_name);
   }, [profile]);
+
+  useEffect(() => {
+    if (loading || !profile?.onboarded_at) return;
+    const next = consumeNext();
+    window.location.replace(next ? href(next) : href('/'));
+  }, [loading, profile?.onboarded_at]);
 
   if (loading) return <p className="text-sm text-zinc-400">Carregando sua conta…</p>;
   if (!session) {
@@ -33,6 +40,21 @@ export function OnboardingForm() {
         para terminar o perfil.
       </p>
     );
+  }
+
+  if (profileError || !profile) {
+    return (
+      <div className="space-y-3">
+        <p className="text-sm text-zinc-300">{profileError ?? 'Não achei seu perfil. Recarregue a página.'}</p>
+        <Button type="button" variant="secondary" onClick={() => void refreshProfile()}>
+          Tentar de novo
+        </Button>
+      </div>
+    );
+  }
+
+  if (profile.onboarded_at) {
+    return <p className="text-sm text-zinc-400">Seu perfil já está pronto. Indo para o portal…</p>;
   }
 
   async function pick(next: File) {
@@ -68,7 +90,8 @@ export function OnboardingForm() {
         return;
       }
       await refreshProfile();
-      window.location.href = href('/');
+      const next = consumeNext();
+      window.location.href = next ? href(next) : href('/');
     } catch (caught) {
       setError(explainUploadError(caught));
     } finally {

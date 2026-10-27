@@ -1,4 +1,4 @@
-import { useState, type SubmitEvent } from 'react';
+import { useEffect, useState, type SubmitEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -6,6 +6,7 @@ import { PasswordField } from '@/components/PasswordField';
 import { FormError } from '@/components/FormError';
 import { AuthProviders, continueAfterSession } from '@/modules/auth/AuthProviders';
 import { authErrorMessage } from '@/lib/auth';
+import { rememberPreference, setRememberPreference, storeNext } from '@/lib/auth-storage';
 import { href } from '@/lib/paths';
 import { absoluteHref } from '@/lib/site';
 import { supabase } from '@/lib/supabase';
@@ -14,16 +15,35 @@ export function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [magic, setMagic] = useState(false);
+  const [remember, setRemember] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const emailError = email.length > 0 && !email.includes('@') ? 'Informe um e-mail válido.' : null;
+
+  useEffect(() => {
+    setRemember(rememberPreference());
+    const next = new URLSearchParams(window.location.search).get('next');
+    if (next) storeNext(next);
+    let cancelled = false;
+    void supabase.auth.getSession().then(async ({ data }) => {
+      if (cancelled || !data.session) return;
+      const result = await continueAfterSession();
+      if (!cancelled && result === 'network') {
+        setError('Sem conexão com o servidor. Tente de novo.');
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function onSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     setPending(true);
     setError(null);
     setInfo(null);
+    setRememberPreference(remember);
     if (magic) {
       const { error: otpError } = await supabase.auth.signInWithOtp({
         email: email.trim(),
@@ -50,12 +70,16 @@ export function LoginForm() {
       }
       return;
     }
-    await continueAfterSession();
+    const result = await continueAfterSession();
+    if (result === 'network') {
+      setPending(false);
+      setError('Sem conexão com o servidor. Tente de novo.');
+    }
   }
 
   return (
     <form className="space-y-4" onSubmit={onSubmit}>
-      <AuthProviders />
+      <AuthProviders remember={remember} />
       <div className="space-y-2">
         <Label htmlFor="email">E-mail</Label>
         <Input
@@ -70,6 +94,20 @@ export function LoginForm() {
         {emailError ? <p className="text-xs text-red-200">{emailError}</p> : null}
       </div>
       {magic ? null : <PasswordField value={password} onChange={setPassword} autoComplete="current-password" />}
+      <label className="flex items-start gap-2 text-sm text-zinc-300">
+        <input
+          type="checkbox"
+          className="mt-1"
+          checked={remember}
+          onChange={(event) => setRemember(event.target.checked)}
+        />
+        <span>
+          Lembrar neste aparelho
+          {remember ? null : (
+            <span className="mt-0.5 block text-xs text-zinc-500">A sessão acaba quando você fechar o navegador.</span>
+          )}
+        </span>
+      </label>
       <FormError message={error} />
       {info ? (
         <p className="rounded-xl border border-accent/30 bg-accent/10 px-3 py-2 text-sm" role="status">

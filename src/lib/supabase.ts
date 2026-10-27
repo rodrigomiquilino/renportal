@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { supabaseAuthStorage } from '@/lib/auth-storage';
 import type { Database } from '@/lib/database.types';
 
 /**
@@ -16,5 +17,6 @@ export const supabase = createClient<Database>(url, anonKey, {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
+    storage: supabaseAuthStorage,
   },
 });

@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PasswordField } from '@/components/PasswordField';
 import { FormError } from '@/components/FormError';
-import { AuthProviders } from '@/modules/auth/AuthProviders';
+import { AuthProviders, continueAfterSession } from '@/modules/auth/AuthProviders';
 import { authErrorMessage } from '@/lib/auth';
 import { USERNAME_PATTERN, normalizeUsername } from '@/lib/format';
 import { passwordAcceptable } from '@/lib/password';
@@ -21,6 +21,17 @@ export function RegisterForm() {
   const [usernameState, setUsernameState] = useState<UsernameState>('idle');
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    void supabase.auth.getSession().then(async ({ data }) => {
+      if (cancelled || !data.session) return;
+      await continueAfterSession();
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     const next = normalizeUsername(username);
@@ -48,7 +59,9 @@ export function RegisterForm() {
           ? 'Alguém já usa esse nome.'
           : usernameState === 'invalid'
             ? '3 a 24 caracteres: letras minúsculas, números e _.'
-            : 'Esse nome aparece no endereço do perfil.';
+            : usernameState === 'error'
+              ? 'Não consegui conferir agora. Você ainda pode tentar criar a conta.'
+              : 'Esse nome aparece no endereço do perfil.';
 
   async function onSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();

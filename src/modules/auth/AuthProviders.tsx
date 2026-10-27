@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { FormError } from '@/components/FormError';
 import { authErrorMessage } from '@/lib/auth';
+import { consumeNext, setRememberPreference } from '@/lib/auth-storage';
 import { authProviders } from '@/lib/features';
+import { href } from '@/lib/paths';
 import { absoluteHref } from '@/lib/site';
 import { supabase } from '@/lib/supabase';
 
-export function AuthProviders() {
+export function AuthProviders({ remember = true }: { remember?: boolean }) {
   const [pending, setPending] = useState<'github' | 'google' | null>(null);
   const [error, setError] = useState<string | null>(null);
   if (!authProviders.github && !authProviders.google) return null;
@@ -14,6 +16,7 @@ export function AuthProviders() {
   async function start(provider: 'github' | 'google') {
     setPending(provider);
     setError(null);
+    setRememberPreference(remember);
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider,
       options: { redirectTo: absoluteHref('/onboarding/') },
@@ -54,21 +57,34 @@ export function AuthProviders() {
   );
 }
 
-export async function continueAfterSession() {
-  const { data } = await supabase.auth.getUser();
+export type SessionContinue = 'redirect' | 'network';
+
+/**
+ * Erro de rede não conta como onboarding feito.
+ * Quem já concluiu volta para `?next=` ou para o início.
+ */
+export async function continueAfterSession(): Promise<SessionContinue> {
+  const { data, error } = await supabase.auth.getUser();
+  if (error) {
+    const message = error.message.toLowerCase();
+    if (message.includes('network') || message.includes('fetch') || message.includes('failed')) return 'network';
+  }
   const userId = data.user?.id;
   if (!userId) {
-    window.location.href = absoluteHref('/');
-    return;
+    window.location.href = href('/');
+    return 'redirect';
   }
-  const { data: profile, error } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('onboarded_at')
     .eq('id', userId)
     .maybeSingle();
-  if (error || profile?.onboarded_at) {
-    window.location.href = absoluteHref('/');
-    return;
+  if (profileError) return 'network';
+  if (!profile?.onboarded_at) {
+    window.location.href = href('/onboarding/');
+    return 'redirect';
   }
-  window.location.href = absoluteHref('/onboarding/');
+  const next = consumeNext();
+  window.location.href = next ? href(next) : href('/');
+  return 'redirect';
 }

@@ -1,6 +1,8 @@
 import { useEffect, useSyncExternalStore } from 'react';
 import type { Session } from '@supabase/supabase-js';
+import { isGuardedPath, pathWithinSite } from '@/lib/access';
 import { translateAuthError } from '@/lib/auth-errors';
+import { href } from '@/lib/paths';
 import { supabase } from '@/lib/supabase';
 import type { Profile } from '@/lib/database.types';
 
@@ -29,10 +31,24 @@ function emit(next: AuthSnapshot) {
 async function loadProfile(userId: string) {
   const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
   if (error) {
-    emit({ ...snapshot, profile: null, error: 'Não foi possível carregar o perfil.' });
+    emit({
+      ...snapshot,
+      profile: null,
+      loading: false,
+      error: 'Não foi possível carregar o perfil. Sem conexão ou o servidor não respondeu.',
+    });
     return;
   }
-  emit({ ...snapshot, profile: data, error: null });
+  emit({ ...snapshot, profile: data, loading: false, error: null });
+}
+
+function sendToLogin() {
+  if (typeof window === 'undefined') return;
+  const next = pathWithinSite(window.location.pathname, window.location.search, import.meta.env.BASE_URL || '/');
+  if (!isGuardedPath(next)) return;
+  const target = `${href('/login/')}?next=${encodeURIComponent(next)}`;
+  if (window.location.pathname.replace(/\/+$/, '').endsWith('/login')) return;
+  window.location.replace(target);
 }
 
 let started = false;
@@ -48,15 +64,24 @@ export function ensureAuth() {
 
   supabase.auth.getSession().then(({ data }) => {
     const session = data.session;
-    emit({ ...snapshot, session, loading: false });
-    if (session?.user) void loadProfile(session.user.id);
+    if (!session?.user) {
+      emit({ ...snapshot, session: null, profile: null, loading: false, error: null });
+      sendToLogin();
+      return;
+    }
+    emit({ ...snapshot, session, loading: true, error: null });
+    void loadProfile(session.user.id);
   });
 
-  supabase.auth.onAuthStateChange((_event, session) => {
+  supabase.auth.onAuthStateChange((event, session) => {
     setTimeout(() => {
-      emit({ ...snapshot, session, loading: false, error: null });
-      if (session?.user) void loadProfile(session.user.id);
-      else emit({ ...snapshot, session: null, profile: null, loading: false });
+      if (!session?.user) {
+        emit({ ...snapshot, session: null, profile: null, loading: false, error: null });
+        if (event === 'SIGNED_OUT') sendToLogin();
+        return;
+      }
+      emit({ ...snapshot, session, loading: true, error: null });
+      void loadProfile(session.user.id);
     }, 0);
   });
 }
@@ -81,6 +106,16 @@ export function useAuth(): AuthSnapshot {
   useEffect(() => {
     ensureAuth();
   }, []);
+  return state;
+}
+
+/** Em conta, admin, onboarding e chat, sessão ausente volta para o login. */
+export function useRequireSession(): AuthSnapshot {
+  const state = useAuth();
+  useEffect(() => {
+    if (state.loading || state.session) return;
+    sendToLogin();
+  }, [state.loading, state.session]);
   return state;
 }
 
