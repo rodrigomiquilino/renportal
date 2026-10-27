@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#0c0c12"/>
+  <defs>
+    <radialGradient id="glow" cx="18%" cy="0%" r="70%">
+      <stop offset="0" stop-color="#8b5cf6" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <rect x="72" y="72" width="64" height="64" rx="16" fill="#8b5cf6"/>
+  <text x="104" y="114" text-anchor="middle" fill="#ffffff" font-family="ui-sans-serif, system-ui" font-size="32" font-weight="700">R</text>
+  <text x="72" y="210" fill="#c4b5fd" font-family="ui-sans-serif, system-ui" font-size="22" font-weight="600" letter-spacing="4">COYOTE LAB</text>
+  <text x="72" y="300" fill="#f4f4f5" font-family="ui-sans-serif, system-ui" font-size="64" font-weight="700">RenPortal</text>
+  <text x="72" y="370" fill="#d4d4d8" font-family="ui-sans-serif, system-ui" font-size="28">Visual novels com progresso que o servidor confere.</text>
+  <text x="72" y="520" fill="#a1a1aa" font-family="ui-sans-serif, system-ui" font-size="22">Astro, Supabase, RLS, GitHub Pages</text>
+  <text x="72" y="558" fill="#8b5cf6" font-family="ui-sans-serif, system-ui" font-size="20">rodrigomiquilino.github.io/renportal</text>
+</svg>

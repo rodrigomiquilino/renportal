@@ -1,0 +1,10 @@
+---
+import DashboardLayout from '../../layouts/DashboardLayout.astro'
+import { GameCatalog } from '../../modules/games/GameCatalog'
+import { ModuleOff } from '../../components/ModuleOff'
+import { features } from '../../lib/features'
+---
+
+<DashboardLayout title="Jogos" description="Biblioteca de visual novels do RenPortal.">
+  {features.games ? <GameCatalog client:load /> : <ModuleOff client:load name="Jogos" feature="games" />}
+</DashboardLayout>

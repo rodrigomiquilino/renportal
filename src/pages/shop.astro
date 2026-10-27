@@ -1,0 +1,10 @@
+---
+import DashboardLayout from '../layouts/DashboardLayout.astro'
+import { ShopGrid } from '../modules/shop/ShopGrid'
+import { ModuleOff } from '../components/ModuleOff'
+import { features } from '../lib/features'
+---
+
+<DashboardLayout title="Loja" description="Cosméticos comprados com XP no RenPortal.">
+  {features.shop ? <ShopGrid client:load /> : <ModuleOff client:load name="Loja" feature="shop" />}
+</DashboardLayout>

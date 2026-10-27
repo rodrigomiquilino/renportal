@@ -1,0 +1,26 @@
+# RenPortal — projeto hospedado "renportal".
+# Vincule com: supabase link --project-ref wlacdgwbwsykvpobkbib
+project_id = "renportal"
+
+# O JWT é conferido dentro da função (auth.getUser), para o CORS preflight
+# responder JSON em vez de um 401 do gateway.
+[functions.start-session]
+verify_jwt = false
+
+[functions.heartbeat]
+verify_jwt = false
+
+[functions.end-session]
+verify_jwt = false
+
+[functions.purchase-item]
+verify_jwt = false
+
+[functions.admin-upload-game]
+verify_jwt = false
+
+# O navegador manda OPTIONS sem JWT. Se o gateway exigisse o token,
+# o preflight de donate-xp falhava com 401 e o POST nem saía.
+# A função continua chamando readUser (auth.getUser) antes de qualquer escrita.
+[functions.donate-xp]
+verify_jwt = false

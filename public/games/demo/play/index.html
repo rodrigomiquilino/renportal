@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Estação Aurora</title>
+    <style>
+      :root { color-scheme: dark; }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        margin: 0;
+        font-family: "Segoe UI", sans-serif;
+        color: #f4f4f5;
+        background: #0c0c12;
+      }
+      .sky {
+        position: fixed;
+        inset: 0;
+        background:
+          radial-gradient(ellipse at 50% 0%, rgba(139, 92, 246, 0.45), transparent 55%),
+          linear-gradient(#14141f, #0c0c12 72%);
+      }
+      .stage {
+        position: relative;
+        min-height: 100%;
+        display: flex;
+        align-items: flex-end;
+        padding: 24px;
+      }
+      .box {
+        width: min(720px, 100%);
+        margin: 0 auto;
+        padding: 18px 20px 16px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        background: rgba(22, 22, 30, 0.94);
+      }
+      .who {
+        margin: 0;
+        color: #c4b5fd;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+      .line { margin: 8px 0 0; font-size: 18px; line-height: 1.45; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+      button {
+        border: 1px solid rgba(139, 92, 246, 0.7);
+        background: transparent;
+        color: white;
+        border-radius: 999px;
+        padding: 8px 14px;
+        cursor: pointer;
+        font: inherit;
+      }
+      button:hover { background: rgba(139, 92, 246, 0.25); }
+      .hint { margin: 10px 0 0; color: #a1a1aa; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <div class="sky" aria-hidden="true"></div>
+    <main class="stage">
+      <div class="box">
+        <p class="who" id="who">Iris</p>
+        <p class="line" id="line"></p>
+        <div class="actions" id="actions"></div>
+        <p class="hint" id="hint"></p>
+      </div>
+    </main>
+    <script>
+      /**
+       * Imita um build web do Ren'Py só o bastante para o portal:
+       * diálogo, uma escolha e um postMessage de marco para o pai.
+       */
+      const script = [
+        { who: 'Iris', text: 'O último trem já foi. A aurora, não.' },
+        { who: 'Você', text: 'Não devia ter luz nenhuma nessa estação.' },
+        { who: 'Iris', text: 'Então escolhe. A gente espera o próximo, ou segue a luz até o fim da plataforma.' },
+      ]
+
+      const whoEl = document.getElementById('who')
+      const lineEl = document.getElementById('line')
+      const actionsEl = document.getElementById('actions')
+      const hintEl = document.getElementById('hint')
+      let index = 0
+
+      function milestone(id, label) {
+        const payload = { type: 'renportal:milestone', id, label }
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage(payload, '*')
+        }
+        hintEl.textContent = 'Marco enviado ao portal: ' + label
+      }
+
+      function render() {
+        actionsEl.innerHTML = ''
+        if (index < script.length) {
+          const beat = script[index]
+          whoEl.textContent = beat.who
+          lineEl.textContent = beat.text
+          const next = document.createElement('button')
+          next.type = 'button'
+          next.textContent = index === script.length - 1 ? 'Escolher' : 'Continuar'
+          next.addEventListener('click', () => {
+            index += 1
+            render()
+          })
+          actionsEl.appendChild(next)
+          hintEl.textContent = 'Clique para avançar.'
+          return
+        }
+
+        whoEl.textContent = 'Iris'
+        lineEl.textContent = 'E aí?'
+        const wait = document.createElement('button')
+        wait.type = 'button'
+        wait.textContent = 'Esperar o próximo trem'
+        wait.addEventListener('click', () => finish('esperar', 'Esperou o próximo trem'))
+        const follow = document.createElement('button')
+        follow.type = 'button'
+        follow.textContent = 'Seguir a aurora'
+        follow.addEventListener('click', () => finish('seguir', 'Seguiu a aurora'))
+        actionsEl.append(wait, follow)
+      }
+
+      function finish(id, label) {
+        actionsEl.innerHTML = ''
+        whoEl.textContent = 'Estação'
+        lineEl.textContent = label + '. A plataforma fica em silêncio de novo.'
+        milestone(id, label)
+      }
+
+      render()
+    </script>
+  </body>
+</html>

@@ -1,0 +1,8 @@
+---
+import DashboardLayout from '../../layouts/DashboardLayout.astro'
+import { PublicProfile } from '../../modules/auth/PublicProfile'
+---
+
+<DashboardLayout title="Perfil" description="Perfil público de um jogador do RenPortal.">
+  <PublicProfile client:load />
+</DashboardLayout>

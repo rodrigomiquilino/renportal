@@ -1,0 +1,10 @@
+---
+import DashboardLayout from '../layouts/DashboardLayout.astro'
+import { Rankings } from '../modules/progression/Rankings'
+import { ModuleOff } from '../components/ModuleOff'
+import { features } from '../lib/features'
+---
+
+<DashboardLayout title="Rankings" description="Quem mais acumulou XP no RenPortal.">
+  {features.progression ? <Rankings client:load /> : <ModuleOff client:load name="Rankings" feature="progression" />}
+</DashboardLayout>

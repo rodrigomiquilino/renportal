@@ -1,0 +1,12 @@
+---
+import AuthLayout from '../layouts/AuthLayout.astro'
+import { LoginForm } from '../modules/auth/LoginForm'
+---
+
+<AuthLayout
+  title="Entrar"
+  heading="Entrar"
+  lede="Use o e-mail da sua conta para retomar nível, jogos e conversas."
+>
+  <LoginForm client:load />
+</AuthLayout>

@@ -1,0 +1,10 @@
+---
+import DashboardLayout from '../layouts/DashboardLayout.astro'
+import { ChatApp } from '../modules/chat/ChatApp'
+import { ModuleOff } from '../components/ModuleOff'
+import { features } from '../lib/features'
+---
+
+<DashboardLayout title="Chat" description="Amigos e conversas do RenPortal.">
+  {features.chat ? <ChatApp client:load /> : <ModuleOff client:load name="Chat" feature="chat" />}
+</DashboardLayout>

@@ -1,0 +1,61 @@
+---
+import '../styles/global.css'
+
+interface Props {
+  title?: string
+  description?: string
+}
+
+const {
+  title = 'RenPortal',
+  description = 'Portal de visual novels Ren\'Py. XP, loja e chat ficam no servidor. Projeto de Rodrigo Miquilino, Coyote Lab.',
+} = Astro.props
+
+const fullTitle = title === 'RenPortal' ? 'RenPortal · Coyote Lab' : `${title} · RenPortal`
+const base = import.meta.env.BASE_URL
+const origin = Astro.site ?? new URL('https://rodrigomiquilino.github.io')
+const canonical = new URL(Astro.url.pathname + Astro.url.search, origin).href
+const ogImage = new URL('og.png', new URL(base, origin)).href
+---
+
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="author" content="Rodrigo Miquilino" />
+    <meta name="theme-color" content="#0c0c12" />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    <link rel="apple-touch-icon" href={`${base}favicon.svg`} />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:site_name" content="RenPortal" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:alt" content="RenPortal, portal de visual novels da Coyote Lab" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <title>{fullTitle}</title>
+  </head>
+  <body class="font-sans antialiased">
+    <a
+      href="#conteudo"
+      class="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-[80] focus:rounded-xl focus:bg-accent focus:px-3 focus:py-2"
+    >
+      Pular para o conteúdo
+    </a>
+    <slot />
+  </body>
+</html>

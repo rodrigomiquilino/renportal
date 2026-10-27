@@ -1,0 +1,10 @@
+---
+import DashboardLayout from '../layouts/DashboardLayout.astro'
+import { GameDetail } from '../modules/games/GameDetail'
+import { ModuleOff } from '../components/ModuleOff'
+import { features } from '../lib/features'
+---
+
+<DashboardLayout title="Jogo" description="Abrir um jogo Ren'Py pelo slug.">
+  {features.games ? <GameDetail client:load /> : <ModuleOff client:load name="Jogos" feature="games" />}
+</DashboardLayout>

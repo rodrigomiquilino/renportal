@@ -1,0 +1,85 @@
+---
+import DashboardLayout from '../layouts/DashboardLayout.astro'
+import { HeroActions } from '../modules/layout/HeroActions'
+import { GameCatalog } from '../modules/games/GameCatalog'
+import { ContinuePlaying } from '../modules/progression/ContinuePlaying'
+import { features } from '../lib/features'
+---
+
+<DashboardLayout
+  title="Início"
+  description="RenPortal é um portal de visual novels Ren'Py. O XP nasce no servidor, a loja e o chat usam Supabase, e o site estático sai no GitHub Pages. Projeto de Rodrigo Miquilino, Coyote Lab."
+>
+  <section class="relative overflow-hidden rounded-2xl border border-white/5 bg-card">
+    <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(139,92,246,0.22),transparent_58%)]"></div>
+    <div class="relative grid gap-8 px-6 py-8 sm:px-10 sm:py-12 lg:grid-cols-[minmax(0,1.4fr)_minmax(16rem,0.7fr)] lg:items-end">
+      <div>
+        <p class="text-xs font-semibold tracking-[0.18em] text-accent uppercase">Coyote Lab · portfólio full-stack</p>
+        <h1 class="mt-3 max-w-xl text-3xl font-semibold tracking-tight text-balance sm:text-5xl">
+          Visual novels com progresso que o servidor confere.
+        </h1>
+        <p class="mt-4 max-w-2xl text-base leading-relaxed text-zinc-300">
+          RenPortal é o projeto de Rodrigo “Coyote” Miquilino. O site é Astro estático no GitHub Pages.
+          Conta, XP, loja, avaliações e chat vivem no Supabase. O navegador mostra o jogo. Quem escreve o ponto é o Postgres.
+        </p>
+        <div class="mt-6">
+          <HeroActions client:load />
+        </div>
+      </div>
+      <dl class="grid grid-cols-2 gap-3 text-sm">
+        <div class="rounded-xl border border-white/5 bg-white/5 px-3 py-3">
+          <dt class="text-xs text-zinc-400">Front</dt>
+          <dd class="mt-1 font-medium">Astro estático</dd>
+        </div>
+        <div class="rounded-xl border border-white/5 bg-white/5 px-3 py-3">
+          <dt class="text-xs text-zinc-400">Dados</dt>
+          <dd class="mt-1 font-medium">Postgres + RLS</dd>
+        </div>
+        <div class="rounded-xl border border-white/5 bg-white/5 px-3 py-3">
+          <dt class="text-xs text-zinc-400">Anti-cheat</dt>
+          <dd class="mt-1 font-medium">Janela 15–90s</dd>
+        </div>
+        <div class="rounded-xl border border-white/5 bg-white/5 px-3 py-3">
+          <dt class="text-xs text-zinc-400">Tempo real</dt>
+          <dd class="mt-1 font-medium">Chat e presença</dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  {features.progression && (
+    <div class="mt-8">
+      <ContinuePlaying client:load />
+    </div>
+  )}
+
+  <section class="mt-8" aria-labelledby="leitura">
+    <h2 id="leitura" class="text-lg font-semibold tracking-tight">O que este repositório mostra</h2>
+    <div class="mt-4 grid gap-4 md:grid-cols-3">
+      <article class="rounded-2xl border border-white/5 bg-card p-5">
+        <h3 class="font-semibold">XP com dono no servidor</h3>
+        <p class="mt-2 text-sm leading-relaxed text-zinc-400">
+          O cliente pede um tick. Uma função <code class="text-zinc-300">security definer</code> trava a sessão, soma o tempo e lança o extrato. Compra e doação seguem a mesma regra.
+        </p>
+      </article>
+      <article class="rounded-2xl border border-white/5 bg-card p-5">
+        <h3 class="font-semibold">Módulos que desligam</h3>
+        <p class="mt-2 text-sm leading-relaxed text-zinc-400">
+          Jogos, loja, chat, admin e doações têm flag de build. Auth fica sempre ligado. Cada pasta em <code class="text-zinc-300">src/modules</code> é uma fatia independente.
+        </p>
+      </article>
+      <article class="rounded-2xl border border-white/5 bg-card p-5">
+        <h3 class="font-semibold">Páginas que nascem depois</h3>
+        <p class="mt-2 text-sm leading-relaxed text-zinc-400">
+          O GitHub Pages não tem servidor. Slug novo cai no 404 e abre <code class="text-zinc-300">/game/?slug=</code>. O HTML é a casca. Os dados chegam no cliente.
+        </p>
+      </article>
+    </div>
+  </section>
+
+  {features.games && (
+    <div class="mt-8">
+      <GameCatalog client:load heading="Na biblioteca" headingLevel="h2" />
+    </div>
+  )}
+</DashboardLayout>

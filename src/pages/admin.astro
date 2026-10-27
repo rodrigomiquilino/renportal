@@ -1,0 +1,10 @@
+---
+import DashboardLayout from '../layouts/DashboardLayout.astro'
+import { AdminApp } from '../modules/admin/AdminApp'
+import { ModuleOff } from '../components/ModuleOff'
+import { features } from '../lib/features'
+---
+
+<DashboardLayout title="Admin" description="Painel administrativo do RenPortal.">
+  {features.admin ? <AdminApp client:load /> : <ModuleOff client:load name="Admin" feature="admin" />}
+</DashboardLayout>

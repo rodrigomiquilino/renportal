@@ -1,0 +1,39 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import SiteFooter from '../components/SiteFooter.astro'
+
+const base = import.meta.env.BASE_URL
+---
+
+<BaseLayout title="Página não encontrada" description="Esse endereço não existe neste build do RenPortal.">
+  <script define:vars={{ base }}>
+    const prefix = base.endsWith('/') ? base.slice(0, -1) : base
+    const path = window.location.pathname
+    const rest = prefix && path.startsWith(prefix) ? path.slice(prefix.length) : path
+    const game = rest.match(/^\/games\/([^/]+)\/?$/)
+    const profile = rest.match(/^\/profile\/([^/]+)\/?$/)
+    if (game && game[1]) {
+      window.location.replace(`${base}game/?slug=${encodeURIComponent(game[1])}`)
+    } else if (profile && profile[1]) {
+      window.location.replace(`${base}profile/?username=${encodeURIComponent(profile[1])}`)
+    }
+  </script>
+  <div class="flex min-h-screen flex-col">
+    <main id="conteudo" class="mx-auto flex w-full max-w-lg flex-1 flex-col justify-center px-6 py-16">
+      <p class="text-xs font-semibold tracking-[0.18em] text-accent uppercase">404</p>
+      <h1 class="mt-2 text-3xl font-semibold tracking-tight text-balance">Essa página não está no mapa</h1>
+      <p class="mt-3 text-sm leading-relaxed text-zinc-300">
+        O endereço não saiu neste build estático. Um jogo ou perfil criado depois da publicação é aberto pela rota com query string, sem recarregar o servidor.
+      </p>
+      <div class="mt-6 flex flex-wrap gap-3">
+        <a class="inline-flex h-10 items-center justify-center rounded-xl bg-accent px-4 text-sm font-semibold text-white" href={base}>
+          Voltar ao início
+        </a>
+        <a class="inline-flex h-10 items-center justify-center rounded-xl bg-white/5 px-4 text-sm font-semibold" href={`${base}games/`}>
+          Ver a biblioteca
+        </a>
+      </div>
+    </main>
+    <SiteFooter />
+  </div>
+</BaseLayout>

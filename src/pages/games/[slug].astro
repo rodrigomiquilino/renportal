@@ -1,0 +1,39 @@
+---
+import DashboardLayout from '../../layouts/DashboardLayout.astro'
+import { GameDetail } from '../../modules/games/GameDetail'
+import { ModuleOff } from '../../components/ModuleOff'
+import { features } from '../../lib/features'
+
+/**
+ * Slugs publicados no momento do build, mais a demo.
+ * Slug novo depois do deploy: 404.html redireciona para /game/?slug=.
+ */
+export async function getStaticPaths() {
+  const slugs = new Set<string>(['demo'])
+  const url = process.env.PUBLIC_SUPABASE_URL || 'https://wlacdgwbwsykvpobkbib.supabase.co'
+  const key =
+    process.env.PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_NkEk7Pn-moYRffrMVcpWNg_J_AMvcB9'
+
+  try {
+    const response = await fetch(`${url}/rest/v1/games?select=slug&published=eq.true`, {
+      headers: { apikey: key, Authorization: `Bearer ${key}` },
+    })
+    if (response.ok) {
+      const rows = (await response.json()) as Array<{ slug?: string }>
+      for (const row of rows) {
+        if (row.slug) slugs.add(row.slug)
+      }
+    }
+  } catch {
+    // A demo segue no build. O resto entra pela rota /game/?slug=.
+  }
+
+  return [...slugs].map((slug) => ({ params: { slug } }))
+}
+
+const { slug } = Astro.params
+---
+
+<DashboardLayout title={slug} description={`Jogar ${slug} no RenPortal.`}>
+  {features.games ? <GameDetail client:load slug={slug} /> : <ModuleOff client:load name="Jogos" feature="games" />}
+</DashboardLayout>

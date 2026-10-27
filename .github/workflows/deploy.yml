@@ -1,0 +1,72 @@
+# Publica https://rodrigomiquilino.github.io/renportal/
+name: Deploy para GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Liga o Pages na fonte GitHub Actions quando o token puder.
+      # O GITHUB_TOKEN padrão não tem administration:write; nesse caso
+      # o dono ativa uma vez em Settings → Pages → Source → GitHub Actions.
+      - name: Configurar Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Dependências
+        run: npm ci
+
+      - name: Build estático
+        env:
+          # Repo vars sobrescrevem os padrões públicos do projeto renportal.
+          PUBLIC_SUPABASE_URL: ${{ vars.PUBLIC_SUPABASE_URL != '' && vars.PUBLIC_SUPABASE_URL || 'https://wlacdgwbwsykvpobkbib.supabase.co' }}
+          PUBLIC_SUPABASE_ANON_KEY: ${{ vars.PUBLIC_SUPABASE_ANON_KEY != '' && vars.PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_NkEk7Pn-moYRffrMVcpWNg_J_AMvcB9' }}
+          PUBLIC_BASE_PATH: ${{ vars.PUBLIC_BASE_PATH != '' && vars.PUBLIC_BASE_PATH || '/renportal/' }}
+          PUBLIC_SITE_URL: ${{ vars.PUBLIC_SITE_URL != '' && vars.PUBLIC_SITE_URL || 'https://rodrigomiquilino.github.io' }}
+          PUBLIC_FEATURE_GAMES: ${{ vars.PUBLIC_FEATURE_GAMES }}
+          PUBLIC_FEATURE_PROGRESSION: ${{ vars.PUBLIC_FEATURE_PROGRESSION }}
+          PUBLIC_FEATURE_SHOP: ${{ vars.PUBLIC_FEATURE_SHOP }}
+          PUBLIC_FEATURE_FEEDBACK: ${{ vars.PUBLIC_FEATURE_FEEDBACK }}
+          PUBLIC_FEATURE_CHAT: ${{ vars.PUBLIC_FEATURE_CHAT }}
+          PUBLIC_FEATURE_ADMIN: ${{ vars.PUBLIC_FEATURE_ADMIN }}
+          PUBLIC_FEATURE_DONATIONS: ${{ vars.PUBLIC_FEATURE_DONATIONS }}
+        run: npm run build
+
+      - name: Artefato do Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publicar
+        id: deployment
+        uses: actions/deploy-pages@v4

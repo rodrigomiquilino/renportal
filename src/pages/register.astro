@@ -1,0 +1,12 @@
+---
+import AuthLayout from '../layouts/AuthLayout.astro'
+import { RegisterForm } from '../modules/auth/RegisterForm'
+---
+
+<AuthLayout
+  title="Criar conta"
+  heading="Criar conta"
+  lede="Escolha um usuário. O perfil nasce sozinho, com nível 1 e zero XP."
+>
+  <RegisterForm client:load />
+</AuthLayout>

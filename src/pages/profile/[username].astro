@@ -1,0 +1,37 @@
+---
+import DashboardLayout from '../../layouts/DashboardLayout.astro'
+import { PublicProfile } from '../../modules/auth/PublicProfile'
+
+/**
+ * Perfis conhecidos no momento do build ganham URL /profile/<usuario>/.
+ * Quem se cadastrar depois cai no 404.html, que manda para /profile/?username=.
+ */
+export async function getStaticPaths() {
+  const url = process.env.PUBLIC_SUPABASE_URL || 'https://wlacdgwbwsykvpobkbib.supabase.co'
+  const key =
+    process.env.PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_NkEk7Pn-moYRffrMVcpWNg_J_AMvcB9'
+  const usernames = new Set<string>()
+
+  try {
+    const response = await fetch(`${url}/rest/v1/profiles?select=username`, {
+      headers: { apikey: key, Authorization: `Bearer ${key}` },
+    })
+    if (response.ok) {
+      const rows = (await response.json()) as Array<{ username?: string }>
+      for (const row of rows) {
+        if (row.username) usernames.add(row.username)
+      }
+    }
+  } catch {
+    // Sem rede ou sem a tabela: a rota de query string cobre o acesso.
+  }
+
+  return [...usernames].map((username) => ({ params: { username } }))
+}
+
+const { username } = Astro.params
+---
+
+<DashboardLayout title={`@${username}`} description={`Perfil de @${username} no RenPortal.`}>
+  <PublicProfile client:load username={username} />
+</DashboardLayout>

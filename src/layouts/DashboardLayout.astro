@@ -1,0 +1,35 @@
+---
+import BaseLayout from './BaseLayout.astro'
+import { Sidebar } from '../modules/layout/Sidebar'
+import { TopBar } from '../modules/layout/TopBar'
+import { ProfilePanel } from '../modules/layout/ProfilePanel'
+import { ToastHost } from '../components/ToastHost'
+import { OnlinePresence } from '../modules/chat/OnlinePresence'
+import { features } from '../lib/features'
+import SiteFooter from '../components/SiteFooter.astro'
+
+interface Props {
+  title?: string
+  description?: string
+}
+
+const { title, description } = Astro.props
+---
+
+<BaseLayout title={title} description={description}>
+  <div class="flex min-h-screen">
+    <aside class="sticky top-0 hidden h-screen w-[248px] shrink-0 border-r border-white/5 bg-[#101018] lg:block">
+      <Sidebar client:load />
+    </aside>
+    <div class="flex min-w-0 flex-1 flex-col">
+      <TopBar client:load />
+      <main id="conteudo" class="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
+        <slot />
+      </main>
+      <SiteFooter />
+    </div>
+    <ProfilePanel client:load />
+  </div>
+  <ToastHost client:load />
+  {features.chat && <OnlinePresence client:load />}
+</BaseLayout>
