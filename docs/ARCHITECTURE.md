@@ -18,7 +18,7 @@ flowchart TB
   Bucket[Storage game-builds]
 
   Browser --> Pages
-  Browser -->|login e sessão| Auth
+  Browser -->|e-mail e senha, ou link| Auth
   Browser -->|leituras| Rest
   Browser -->|POST com JWT| Fn
   Fn --> Sql

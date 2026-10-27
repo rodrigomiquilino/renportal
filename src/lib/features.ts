@@ -8,11 +8,6 @@ function enabled(value: string | undefined): boolean {
   return value === 'true' || value === '1';
 }
 
-export const authProviders = {
-  github: enabled(import.meta.env.PUBLIC_AUTH_GITHUB),
-  google: enabled(import.meta.env.PUBLIC_AUTH_GOOGLE),
-} as const;
-
 export const features = {
   auth: true,
   games: enabled(import.meta.env.PUBLIC_FEATURE_GAMES),

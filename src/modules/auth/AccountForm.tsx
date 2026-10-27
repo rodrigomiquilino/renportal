@@ -6,7 +6,6 @@ import { Label } from '@/components/ui/label';
 import { PasswordField } from '@/components/PasswordField';
 import { FormError } from '@/components/FormError';
 import { authErrorMessage, refreshProfile, useRequireSession } from '@/lib/auth';
-import { hasEmailIdentity } from '@/lib/access';
 import { href } from '@/lib/paths';
 import { passwordAcceptable } from '@/lib/password';
 import { absoluteHref } from '@/lib/site';
@@ -70,7 +69,6 @@ export function AccountForm() {
   }
 
   const account = profile;
-  const emailIdentity = hasEmailIdentity(session.user);
   const currentEmail = session.user.email ?? '';
 
   async function onEmail(event: SubmitEvent<HTMLFormElement>) {
@@ -102,23 +100,20 @@ export function AccountForm() {
       setPasswordError('A senha precisa ter 8 caracteres ou mais e um pouco mais de variedade.');
       return;
     }
+    if (!currentEmail) {
+      setPasswordError('Não achei o e-mail desta conta.');
+      return;
+    }
     setPasswordPending(true);
     setPasswordError(null);
-    if (emailIdentity) {
-      if (!currentEmail) {
-        setPasswordPending(false);
-        setPasswordError('Não achei o e-mail desta conta.');
-        return;
-      }
-      const { error: reauthError } = await supabase.auth.signInWithPassword({
-        email: currentEmail,
-        password: currentPassword,
-      });
-      if (reauthError) {
-        setPasswordPending(false);
-        setPasswordError(authErrorMessage(reauthError.message));
-        return;
-      }
+    const { error: reauthError } = await supabase.auth.signInWithPassword({
+      email: currentEmail,
+      password: currentPassword,
+    });
+    if (reauthError) {
+      setPasswordPending(false);
+      setPasswordError(authErrorMessage(reauthError.message));
+      return;
     }
     const { error } = await supabase.auth.updateUser({ password: nextPassword });
     setPasswordPending(false);
@@ -128,9 +123,7 @@ export function AccountForm() {
     }
     setCurrentPassword('');
     setNextPassword('');
-    toast(
-      emailIdentity ? 'Senha atualizada neste aparelho.' : 'Senha criada. Dá para entrar com e-mail e senha também.',
-    );
+    toast('Senha atualizada neste aparelho.');
   }
 
   async function onPrivacy(event: SubmitEvent<HTMLFormElement>) {
@@ -170,23 +163,20 @@ export function AccountForm() {
       setDeleteError('Digite seu usuário exatamente como está no perfil.');
       return;
     }
+    if (!currentEmail) {
+      setDeleteError('Não achei o e-mail desta conta.');
+      return;
+    }
     setDeletePending(true);
     setDeleteError(null);
-    if (emailIdentity) {
-      if (!currentEmail) {
-        setDeletePending(false);
-        setDeleteError('Não achei o e-mail desta conta.');
-        return;
-      }
-      const { error: reauthError } = await supabase.auth.signInWithPassword({
-        email: currentEmail,
-        password: deletePassword,
-      });
-      if (reauthError) {
-        setDeletePending(false);
-        setDeleteError(authErrorMessage(reauthError.message));
-        return;
-      }
+    const { error: reauthError } = await supabase.auth.signInWithPassword({
+      email: currentEmail,
+      password: deletePassword,
+    });
+    if (reauthError) {
+      setDeletePending(false);
+      setDeleteError(authErrorMessage(reauthError.message));
+      return;
     }
     const { error } = await supabase.functions.invoke('delete-account', {
       body: { username: account.username },
@@ -230,26 +220,18 @@ export function AccountForm() {
       </form>
 
       <form className="space-y-3 rounded-2xl border border-white/5 bg-card p-5" onSubmit={onPassword}>
-        <h2 className="font-semibold">{emailIdentity ? 'Senha' : 'Criar senha'}</h2>
-        {emailIdentity ? (
-          <p className="text-sm text-zinc-400">
-            Se você nunca criou uma senha e entra só com o link do e-mail, saia e use Esqueci a senha.
-          </p>
-        ) : (
-          <p className="text-sm text-zinc-400">
-            Esta conta entrou com GitHub ou Google. A senha é um jeito a mais de entrar.
-          </p>
-        )}
-        {emailIdentity ? (
-          <PasswordField
-            label="Senha atual"
-            value={currentPassword}
-            onChange={setCurrentPassword}
-            autoComplete="current-password"
-          />
-        ) : null}
+        <h2 className="font-semibold">Senha</h2>
+        <p className="text-sm text-zinc-400">
+          Se você entra só com o link do e-mail e ainda não tem senha, saia e use Esqueci a senha.
+        </p>
         <PasswordField
-          label={emailIdentity ? 'Nova senha' : 'Senha'}
+          label="Senha atual"
+          value={currentPassword}
+          onChange={setCurrentPassword}
+          autoComplete="current-password"
+        />
+        <PasswordField
+          label="Nova senha"
           value={nextPassword}
           onChange={setNextPassword}
           autoComplete="new-password"
@@ -257,7 +239,7 @@ export function AccountForm() {
         />
         <FormError message={passwordError} />
         <Button type="submit" disabled={passwordPending}>
-          {passwordPending ? 'Salvando…' : emailIdentity ? 'Atualizar senha' : 'Criar senha'}
+          {passwordPending ? 'Salvando…' : 'Atualizar senha'}
         </Button>
       </form>
 
@@ -338,21 +320,15 @@ export function AccountForm() {
             required
           />
         </div>
-        {emailIdentity ? (
-          <>
-            <p className="text-sm text-zinc-400">
-              Se você nunca criou uma senha, saia e use Esqueci a senha. Depois volte aqui.
-            </p>
-            <PasswordField
-              label="Senha atual"
-              value={deletePassword}
-              onChange={setDeletePassword}
-              autoComplete="current-password"
-            />
-          </>
-        ) : (
-          <p className="text-sm text-zinc-400">Conta do GitHub ou Google: o usuário acima confirma a exclusão.</p>
-        )}
+        <p className="text-sm text-zinc-400">
+          Se você nunca criou uma senha, saia e use Esqueci a senha. Depois volte aqui.
+        </p>
+        <PasswordField
+          label="Senha atual"
+          value={deletePassword}
+          onChange={setDeletePassword}
+          autoComplete="current-password"
+        />
         <FormError message={deleteError} />
         <Button type="submit" variant="outline" className="text-red-200" disabled={deletePending}>
           {deletePending ? 'Apagando…' : 'Apagar minha conta'}

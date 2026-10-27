@@ -4,8 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PasswordField } from '@/components/PasswordField';
 import { FormError } from '@/components/FormError';
-import { AuthProviders, continueAfterSession } from '@/modules/auth/AuthProviders';
-import { authErrorMessage } from '@/lib/auth';
+import { authErrorMessage, continueAfterSession } from '@/lib/auth';
 import { USERNAME_PATTERN, normalizeUsername } from '@/lib/format';
 import { passwordAcceptable } from '@/lib/password';
 import { href } from '@/lib/paths';
@@ -101,7 +100,6 @@ export function RegisterForm() {
 
   return (
     <form className="space-y-4" onSubmit={onSubmit}>
-      <AuthProviders />
       <div className="space-y-2">
         <Label htmlFor="username">Usuário</Label>
         <Input

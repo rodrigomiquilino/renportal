@@ -31,20 +31,6 @@ export function isGuardedPath(path: string): boolean {
   return GUARDED.has(clean);
 }
 
-/** Conta com identidade de e-mail (senha ou link). OAuth puro não tem. */
-export function hasEmailIdentity(
-  user: {
-    identities?: Array<{ provider?: string }> | null;
-    app_metadata?: { provider?: string; providers?: string[] } | null;
-  } | null,
-): boolean {
-  if (!user) return false;
-  const providers = user.app_metadata?.providers;
-  if (Array.isArray(providers)) return providers.includes('email');
-  if (user.app_metadata?.provider === 'email') return true;
-  return (user.identities ?? []).some((item) => item.provider === 'email');
-}
-
 /** Conteúdo adulto é opt-in. Admin vê a ficha mesmo com a opção desligada. */
 export function canSeeMature(showAdult: boolean | null | undefined, isAdmin = false): boolean {
   return Boolean(showAdult) || isAdmin;

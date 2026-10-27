@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canSeeMature, hasEmailIdentity, isGuardedPath, pathWithinSite, safeNextPath } from './access';
+import { canSeeMature, isGuardedPath, pathWithinSite, safeNextPath } from './access';
 
 describe('safeNextPath', () => {
   it('aceita caminho interno', () => {
@@ -27,15 +27,6 @@ describe('isGuardedPath', () => {
     expect(isGuardedPath('/conta/')).toBe(true);
     expect(isGuardedPath('/admin')).toBe(true);
     expect(isGuardedPath('/games/')).toBe(false);
-  });
-});
-
-describe('hasEmailIdentity', () => {
-  it('distingue e-mail de OAuth puro', () => {
-    expect(hasEmailIdentity({ app_metadata: { providers: ['email'] } })).toBe(true);
-    expect(hasEmailIdentity({ app_metadata: { providers: ['github'] } })).toBe(false);
-    expect(hasEmailIdentity({ identities: [{ provider: 'google' }] })).toBe(false);
-    expect(hasEmailIdentity(null)).toBe(false);
   });
 });
 

@@ -101,7 +101,7 @@ Cada pasta em `src/modules/` é independente. Só auth é dependência dos outro
 | Admin | `PUBLIC_FEATURE_ADMIN` | `007_admin.sql`, function `admin-upload-game` e `role = 'admin'`. |
 | Doações de XP | `PUBLIC_FEATURE_DONATIONS` | `008_donations.sql` e a function `donate-xp`. |
 
-O que ainda depende do painel do Supabase (migrations 009 e 010, function de upload, GitHub, Google e URLs de redirect) está em [docs/BACKEND.md](docs/BACKEND.md).
+O que ainda depende do painel do Supabase (migrations, functions e URLs de redirect do e-mail) está em [docs/BACKEND.md](docs/BACKEND.md).
 
 ## Como rodar localmente
 
