@@ -1,0 +1,10 @@
+dist
+node_modules
+.astro
+package-lock.json
+public
+supabase
+coverage
+docs
+*.md
+*.astro

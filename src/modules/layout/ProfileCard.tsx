@@ -1,14 +1,14 @@
-import { href } from '@/lib/paths'
-import { useAuth } from '@/lib/auth'
-import { formatPlayTime, formatXp } from '@/lib/format'
-import { levelProgress } from '@/lib/level'
-import { Avatar } from '@/components/Avatar'
-import { Button } from '@/components/ui/button'
-import { EditProfileDialog } from '@/modules/auth/EditProfileDialog'
+import { href } from '@/lib/paths';
+import { useAuth } from '@/lib/auth';
+import { formatPlayTime, formatXp } from '@/lib/format';
+import { levelProgress } from '@/lib/level';
+import { Avatar } from '@/components/Avatar';
+import { Button } from '@/components/ui/button';
+import { EditProfileDialog } from '@/modules/auth/EditProfileDialog';
 
 /** Cartão de nível, barra de XP e cosméticos ativos. */
 export function ProfileCard() {
-  const { session, profile, loading } = useAuth()
+  const { session, profile, loading } = useAuth();
 
   if (loading) {
     return (
@@ -16,7 +16,7 @@ export function ProfileCard() {
         <div className="h-14 rounded-xl bg-white/5" />
         <div className="h-2 rounded-full bg-white/5" />
       </div>
-    )
+    );
   }
 
   if (!session || !profile) {
@@ -33,10 +33,10 @@ export function ProfileCard() {
           </Button>
         </div>
       </div>
-    )
+    );
   }
 
-  const progress = levelProgress(Number(profile.xp))
+  const progress = levelProgress(Number(profile.xp));
 
   return (
     <div className="rounded-2xl border border-white/5 bg-card p-4">
@@ -61,7 +61,14 @@ export function ProfileCard() {
           <span className="font-medium">Nível {profile.level}</span>
           <span className="text-zinc-400">{formatXp(Number(profile.xp))} XP</span>
         </div>
-        <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/5" role="meter" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress.ratio * 100)} aria-label="Progresso de XP">
+        <div
+          className="mt-2 h-2 overflow-hidden rounded-full bg-white/5"
+          role="meter"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={Math.round(progress.ratio * 100)}
+          aria-label="Progresso de XP"
+        >
           <div className="h-full rounded-full bg-accent" style={{ width: `${progress.ratio * 100}%` }} />
         </div>
         <p className="mt-2 text-xs text-zinc-500">
@@ -87,5 +94,5 @@ export function ProfileCard() {
         <EditProfileDialog />
       </div>
     </div>
-  )
+  );
 }
