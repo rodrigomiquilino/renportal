@@ -24,6 +24,7 @@ type Draft = {
   title: string;
   description: string;
   version: string;
+  contentRating: 'everyone' | 'mature';
   published: boolean;
   coverPreview: string | null;
   coverFile: File | null;
@@ -46,6 +47,7 @@ const empty: Draft = {
   title: '',
   description: '',
   version: '',
+  contentRating: 'everyone',
   published: false,
   coverPreview: null,
   coverFile: null,
@@ -99,6 +101,7 @@ export function GamesAdmin() {
       title: game.title,
       description: game.description ?? '',
       version: game.version ?? '',
+      contentRating: game.content_rating === 'mature' ? 'mature' : 'everyone',
       published: game.published,
       coverPreview: game.cover_url,
       coverUrl: game.cover_url,
@@ -221,6 +224,19 @@ export function GamesAdmin() {
         await supabase.from('games').update(patch).eq('id', data.game.id);
       }
 
+      if (data.game?.id) {
+        const { error: ratingError } = await supabase
+          .from('games')
+          .update({ content_rating: draft.contentRating })
+          .eq('id', data.game.id);
+        const ratingMissing = ratingError && /column|schema cache|content_rating/i.test(ratingError.message);
+        if (ratingError && !(ratingMissing && draft.contentRating === 'everyone')) {
+          setError('O jogo foi salvo, mas a classificação adulto precisa da migration 011_account_privacy.sql.');
+          await load();
+          return;
+        }
+      }
+
       toast(draft.published ? 'Jogo publicado.' : 'Jogo salvo como oculto.');
       setDraft(empty);
       setProgress(null);
@@ -325,6 +341,21 @@ export function GamesAdmin() {
             value={draft.description}
             onChange={(event) => setDraft({ ...draft, description: event.target.value })}
           />
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor="game-rating">Classificação</Label>
+          <select
+            id="game-rating"
+            className={selectClass}
+            value={draft.contentRating}
+            onChange={(event) =>
+              setDraft({ ...draft, contentRating: event.target.value === 'mature' ? 'mature' : 'everyone' })
+            }
+          >
+            <option value="everyone">Livre</option>
+            <option value="mature">Adulto, 18+</option>
+          </select>
+          <p className="text-xs text-zinc-500">Adulto fica oculto até a pessoa declarar que tem 18 anos, em Conta.</p>
         </div>
         <label className="flex items-center gap-2 text-sm">
           <input

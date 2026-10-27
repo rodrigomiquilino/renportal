@@ -3,9 +3,10 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useAuth } from '@/lib/auth';
+import { authErrorMessage, refreshProfile, useRequireSession } from '@/lib/auth';
 import { href } from '@/lib/paths';
 import { supabase } from '@/lib/supabase';
+import { ReportUserDialog } from '@/modules/auth/ReportUserDialog';
 import { cn } from '@/lib/utils';
 import { sanitizeChat } from '@/lib/chat-text';
 import { useOnlineIds } from '@/modules/chat/presence';
@@ -32,8 +33,18 @@ type Thread = { id: string; person: Person };
 
 const personColumns = 'id, username, display_name, avatar_url, active_title, active_border, active_effect';
 
+const hiddenPerson = (id: string): Person => ({
+  id,
+  username: 'oculto',
+  display_name: 'Perfil indisponível',
+  avatar_url: null,
+  active_title: null,
+  active_border: null,
+  active_effect: null,
+});
+
 export function ChatApp() {
-  const { session, profile, loading } = useAuth();
+  const { session, profile, loading, error: profileError } = useRequireSession();
   const userId = session?.user.id ?? null;
   const online = useOnlineIds();
   const [friends, setFriends] = useState<FriendRow[]>([]);
@@ -46,6 +57,7 @@ export function ChatApp() {
   const [typing, setTyping] = useState<string[]>([]);
   const [query, setQuery] = useState('');
   const [found, setFound] = useState<Person[]>([]);
+  const [blockedIds, setBlockedIds] = useState<Set<string>>(new Set());
   const [banner, setBanner] = useState<string | null>(null);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const endRef = useRef<HTMLDivElement>(null);
@@ -94,21 +106,25 @@ export function ChatApp() {
       ? await supabase.from('profiles').select(personColumns).in('id', profileIds)
       : { data: [] as Person[] };
     const byId = new Map((people ?? []).map((person) => [person.id, person]));
+    const { data: blockRows } = await supabase.from('user_blocks').select('blocked_id').eq('blocker_id', currentUser);
+    setBlockedIds(new Set((blockRows ?? []).map((row) => row.blocked_id)));
 
     setFriends(
-      (links ?? []).flatMap((link) => {
+      (links ?? []).map((link) => {
         const otherId = link.requester_id === currentUser ? link.addressee_id : link.requester_id;
-        const person = byId.get(otherId);
-        if (!person) return [];
-        return [{ id: link.id, status: link.status, incoming: link.addressee_id === currentUser, person }];
+        return {
+          id: link.id,
+          status: link.status,
+          incoming: link.addressee_id === currentUser,
+          person: byId.get(otherId) ?? hiddenPerson(otherId),
+        };
       }),
     );
     setThreads(
       conversationIds.flatMap((id) => {
         const other = (participants ?? []).find((row) => row.conversation_id === id && row.user_id !== currentUser);
-        const person = other ? byId.get(other.user_id) : undefined;
-        if (!person) return [];
-        return [{ id, person }];
+        if (!other) return [];
+        return [{ id, person: byId.get(other.user_id) ?? hiddenPerson(other.user_id) }];
       }),
     );
     setStatus('ready');
@@ -203,7 +219,10 @@ export function ChatApp() {
     if (!userId) return;
     const { error } = await supabase.from('friendships').insert({ requester_id: userId, addressee_id: person.id });
     if (error) {
-      setBanner('Não foi possível enviar o pedido. Talvez ele já exista.');
+      if (error.message.includes('não aceita')) setBanner('Esta pessoa não aceita pedidos de amizade.');
+      else if (error.message.toLowerCase().includes('muitas'))
+        setBanner('Muitos pedidos em pouco tempo. Espere um pouco.');
+      else setBanner('Não foi possível enviar o pedido.');
       return;
     }
     setFound([]);
@@ -223,16 +242,34 @@ export function ChatApp() {
     await loadSocial(userId);
   }
 
-  async function block(id: string) {
+  async function blockPerson(personId: string, friendshipId?: string, status?: Friendship['status']) {
     if (!userId) return;
-    await supabase.from('friendships').update({ status: 'blocked' }).eq('id', id);
+    const already = blockedIds.has(personId) || status === 'blocked';
+    if (already) {
+      const { error } = await supabase.from('user_blocks').delete().eq('blocker_id', userId).eq('blocked_id', personId);
+      if (error && !/user_blocks|schema cache|column/i.test(error.message)) {
+        setBanner(authErrorMessage(error.message));
+        return;
+      }
+      if (status === 'blocked' && friendshipId) await supabase.from('friendships').delete().eq('id', friendshipId);
+    } else {
+      const { error } = await supabase.from('user_blocks').insert({ blocker_id: userId, blocked_id: personId });
+      if (error && error.code !== '23505') {
+        setBanner(authErrorMessage(error.message));
+        return;
+      }
+    }
     await loadSocial(userId);
   }
 
   async function openChat(person: Person) {
     const { data, error } = await supabase.rpc('create_direct_conversation', { p_other: person.id });
     if (error || !data) {
-      setBanner('A conversa só abre entre amigos aceitos.');
+      setBanner(
+        error?.message.includes('Não foi possível')
+          ? 'Não foi possível abrir a conversa.'
+          : 'A conversa só abre entre amigos aceitos.',
+      );
       return;
     }
     setThreads((current) =>
@@ -299,17 +336,19 @@ export function ChatApp() {
     if (data) upsertMessage(data);
   }
 
-  if (loading || status === 'loading') {
+  if (loading || (session && status === 'loading')) {
     return <div className="h-80 animate-pulse rounded-2xl border border-white/5 bg-card" />;
   }
 
-  if (!session || !profile) {
+  if (!session) return <p className="text-sm text-zinc-400">Indo para o login…</p>;
+
+  if (profileError || !profile) {
     return (
       <section className="rounded-2xl border border-white/5 bg-card p-8">
         <h1 className="text-2xl font-semibold tracking-tight">Chat</h1>
-        <p className="mt-2 text-sm text-zinc-400">Entre para pedir amizade e conversar.</p>
-        <Button asChild className="mt-4">
-          <a href={href('/login')}>Entrar</a>
+        <p className="mt-2 text-sm text-zinc-400">{profileError ?? 'Não achei seu perfil.'}</p>
+        <Button type="button" className="mt-4" variant="secondary" onClick={() => void refreshProfile()}>
+          Tentar de novo
         </Button>
       </section>
     );
@@ -342,7 +381,12 @@ export function ChatApp() {
                 <ul className="space-y-2">
                   {found.map((person) => (
                     <li key={person.id} className="flex items-center justify-between gap-2 text-sm">
-                      <span>@{person.username}</span>
+                      <a
+                        className="truncate hover:underline"
+                        href={href(`/profile/?username=${encodeURIComponent(person.username)}`)}
+                      >
+                        @{person.username}
+                      </a>
                       <Button type="button" size="sm" onClick={() => requestFriend(person)}>
                         Pedir
                       </Button>
@@ -386,17 +430,22 @@ export function ChatApp() {
                         {friend.status === 'pending' && !friend.incoming ? (
                           <span className="text-xs text-zinc-500">Aguardando</span>
                         ) : null}
-                        {friend.status === 'accepted' ? (
+                        {friend.status === 'accepted' && !blockedIds.has(friend.person.id) ? (
                           <Button type="button" size="sm" onClick={() => openChat(friend.person)}>
                             Conversar
                           </Button>
                         ) : null}
-                        {friend.status === 'blocked' ? <span className="text-xs text-zinc-500">Bloqueado</span> : null}
-                        {friend.status !== 'blocked' ? (
-                          <Button type="button" size="sm" variant="ghost" onClick={() => block(friend.id)}>
-                            Bloquear
-                          </Button>
+                        {blockedIds.has(friend.person.id) || friend.status === 'blocked' ? (
+                          <span className="text-xs text-zinc-500">Bloqueado</span>
                         ) : null}
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => void blockPerson(friend.person.id, friend.id, friend.status)}
+                        >
+                          {blockedIds.has(friend.person.id) || friend.status === 'blocked' ? 'Desbloquear' : 'Bloquear'}
+                        </Button>
                         <Button type="button" size="sm" variant="ghost" onClick={() => removeFriend(friend.id)}>
                           Remover
                         </Button>
@@ -447,6 +496,12 @@ export function ChatApp() {
                       {active.person.active_title ? `${active.person.active_title} · ` : ''}
                       {online.has(active.person.id) ? 'online' : `@${active.person.username}`}
                     </p>
+                  </div>
+                  <div className="ml-auto flex gap-1">
+                    <Button type="button" size="sm" variant="ghost" onClick={() => void blockPerson(active.person.id)}>
+                      {blockedIds.has(active.person.id) ? 'Desbloquear' : 'Bloquear'}
+                    </Button>
+                    <ReportUserDialog userId={active.person.id} username={active.person.username} />
                   </div>
                 </header>
                 <ul className="flex-1 space-y-3 overflow-y-auto px-4 py-4">

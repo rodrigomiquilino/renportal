@@ -79,7 +79,13 @@ export function GameDetail({ slug }: { slug?: string }) {
     return (
       <section className="rounded-2xl border border-white/5 bg-card p-8">
         <h1 className="text-2xl font-semibold tracking-tight">Jogo não encontrado</h1>
-        <p className="mt-2 text-sm text-zinc-400">Esse slug não está publicado.</p>
+        <p className="mt-2 text-sm text-zinc-400">
+          Esse endereço não está publicado para a sua conta. Jogos adultos só aparecem depois que você liga a opção em{' '}
+          <a className="font-medium text-accent hover:underline" href={href('/conta/')}>
+            Conta
+          </a>
+          .
+        </p>
         <a className="mt-4 inline-block text-sm font-medium text-accent" href={href('/games/')}>
           Voltar para a biblioteca
         </a>
@@ -96,7 +102,9 @@ export function GameDetail({ slug }: { slug?: string }) {
           <img src={cover} alt="" className="h-40 w-full rounded-2xl border border-white/5 object-cover sm:w-64" />
         ) : null}
         <div>
-          <p className="text-xs font-semibold tracking-[0.16em] text-accent uppercase">Visual novel</p>
+          <p className="text-xs font-semibold tracking-[0.16em] text-accent uppercase">
+            {game.content_rating === 'mature' ? '18+' : 'Visual novel'}
+          </p>
           <h1 className="mt-1 text-3xl font-semibold tracking-tight">{game.title}</h1>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-400">{game.description}</p>
         </div>

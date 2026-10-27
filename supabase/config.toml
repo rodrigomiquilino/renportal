@@ -24,3 +24,7 @@ verify_jwt = false
 # A função continua chamando readUser (auth.getUser) antes de qualquer escrita.
 [functions.donate-xp]
 verify_jwt = false
+
+# OPTIONS sem JWT. A função chama readUser e só apaga o dono do token.
+[functions.delete-account]
+verify_jwt = false

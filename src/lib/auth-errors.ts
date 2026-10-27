@@ -54,6 +54,9 @@ export function translateAuthError(raw: string): string {
   if (message.includes('otp') && (message.includes('expired') || message.includes('invalid'))) {
     return 'Esse link expirou. Peça outro.';
   }
+  if (message.includes('jwt') || message.includes('refresh token') || message.includes('session expired')) {
+    return 'Sua sessão expirou. Entre de novo.';
+  }
   if (message.includes('same password') || message.includes('different from the old')) {
     return 'Escolha uma senha diferente da atual.';
   }
@@ -61,12 +64,24 @@ export function translateAuthError(raw: string): string {
     return 'Esta conta está bloqueada.';
   }
   if (
+    message.includes('show_adult') ||
+    message.includes('profile_visibility') ||
+    message.includes('show_activity') ||
+    message.includes('allow_friend_requests') ||
+    message.includes('content_rating') ||
+    message.includes('user_blocks') ||
+    message.includes('user_reports') ||
+    message.includes('username_taken')
+  ) {
+    return 'Falta aplicar a migration 011_account_privacy.sql no Supabase.';
+  }
+  if (
     message.includes('onboarded_at') ||
     message.includes('banner_url') ||
     message.includes('schema cache') ||
     message.includes('column')
   ) {
-    return 'Falta aplicar a migration nova no Supabase (009_media.sql).';
+    return 'Falta aplicar uma migration nova no Supabase.';
   }
   if (message.includes('network') || message.includes('failed to fetch')) {
     return 'Sem conexão com o servidor. Tente de novo.';

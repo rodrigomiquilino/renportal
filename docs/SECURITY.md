@@ -20,8 +20,9 @@ Toda tabela de `public` tem RLS ligado. As policies não fazem subquery em `prof
 
 Leituras típicas:
 
-- perfil: qualquer um autenticado lê perfis (o portal é social). O anon lê o necessário para a página pública quando a policy permite.
-- jogos publicados e itens ativos: `anon` e `authenticated`.
+- perfil: visitante lê `public`. Quem entrou lê `public` e `members`, e a própria linha. `private` é só o dono e o admin. A coluna `show_activity` esconde XP no ranking e na página; a linha continua legível para quem já pode ver o perfil, então não é segredo de coluna.
+- jogos publicados: `everyone` para todo mundo. `mature` só se o perfil do visitante tem `show_adult`, ou se é admin. O endereço direto obedece a mesma policy.
+- bloqueio em `user_blocks` vale nos dois sentidos para pedido, conversa e mensagem. A denúncia é insert do autor e leitura de admin, com teto de 5 por dia.
 - `xp_log`, `play_sessions`, `user_items`, `donations`: o dono, o outro lado quando faz sentido (doação), ou admin.
 - mensagens: só participante da conversa, ou admin.
 

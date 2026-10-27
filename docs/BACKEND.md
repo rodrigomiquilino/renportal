@@ -1,55 +1,54 @@
 # O que aplicar no Supabase
 
-O site novo não liga sozinho. Estas mudanças ficam no repositório. Quem tem o painel do projeto `wlacdgwbwsykvpobkbib` precisa rodar isto antes do público usar avatar, loja com imagem e o limite do chat.
+009, 010 e a function `admin-upload-game` já estão no projeto. O que falta desta rodada é a migration 011 e a function `delete-account`.
 
-## 1. Migrations
+## 1. Migration
 
-No SQL Editor, nesta ordem, o conteúdo de:
+No SQL Editor, o conteúdo de `supabase/migrations/011_account_privacy.sql`.
 
-1. `supabase/migrations/009_media.sql`
-2. `supabase/migrations/010_chat_guard.sql`
+Ela é idempotente. Cria:
 
-As duas são idempotentes. A 009 cria as colunas `banner_url`, `onboarded_at`, `games.version`, `games.web_url`, `shop_items.image_url`, deixa `web_path` nulo e abre os buckets `avatars`, `covers` e `shop-assets` com RLS. A 010 limpa HTML das mensagens e limita ritmo (20 mensagens por minuto, 15 pedidos de amizade por hora).
-
-Se o histórico do CLI não conhecer esses arquivos:
+- no perfil: `show_adult` (padrão desligado), `profile_visibility` (`public`, `members`, `private`), `show_activity`, `allow_friend_requests`
+- em jogos: `content_rating` (`everyone` ou `mature`)
+- `username_taken`, para o nome continuar único mesmo com perfil privado
+- `user_blocks` e `is_blocked` (também considera amizade antiga com status `blocked`)
+- trava de pedido de amizade, de conversa e de mensagem quando há bloqueio
+- `user_reports`, no máximo 5 denúncias por dia
 
 ```bash
 supabase link --project-ref wlacdgwbwsykvpobkbib
-supabase db query --linked -f supabase/migrations/009_media.sql
-supabase db query --linked -f supabase/migrations/010_chat_guard.sql
+supabase db query --linked -f supabase/migrations/011_account_privacy.sql
 ```
+
+Sem a 011, o site continua de pé. Privacidade, 18+, bloqueio e denúncia avisam que a migration falta. O ranking, se a coluna ainda não existir, volta para a lista antiga.
+
+A classificação do jogo é gravada pelo admin no cliente, na policy de update que já existe. Não precisa republicar `admin-upload-game` por causa disso.
 
 ## 2. Edge Function
 
-Republicar a função que assina o upload do zip:
+Publicar a exclusão de conta. Ela confere o JWT no código, compara o usuário digitado com o perfil e chama `auth.admin.deleteUser`. A service role continua só no ambiente da função.
 
 ```bash
-supabase functions deploy admin-upload-game --project-ref wlacdgwbwsykvpobkbib
+supabase functions deploy delete-account --project-ref wlacdgwbwsykvpobkbib
 ```
 
-Ela continua conferindo o JWT no código. `verify_jwt` segue `false` por causa do preflight, como as outras.
+`verify_jwt` fica `false` por causa do preflight, como as outras.
 
-XP, compra e doação não mudaram de função. Não é preciso redeploy de `heartbeat`, `purchase-item` ou `donate-xp` por causa desta rodada.
+Quem tem identidade de e-mail redigita a senha antes. Conta só de GitHub ou Google confirma digitando o usuário. Isso evita clique errado. Uma sessão roubada que já consegue ler o usuário ainda consegue apagar conta OAuth; a senha cobre o caso do e-mail.
 
 ## 3. Auth
 
-Em Authentication → URL configuration, acrescentar:
+Acrescentar em Authentication → URL configuration, além das que já estavam (`confirm`, `reset`, `onboarding`):
 
-- `https://rodrigomiquilino.github.io/renportal/confirm/`
-- `https://rodrigomiquilino.github.io/renportal/reset/`
-- `https://rodrigomiquilino.github.io/renportal/onboarding/`
-- o mesmo trio em `http://127.0.0.1:4455/renportal/` se for testar local
+- `https://rodrigomiquilino.github.io/renportal/conta/`
+- `http://127.0.0.1:4455/renportal/conta/` se for testar local
 
-Site URL pode continuar `https://rodrigomiquilino.github.io/renportal/`.
+A troca de e-mail manda o link para essa página. Confirme o e-mail novo e, se o Supabase mandar, o antigo também.
 
-Providers:
+Senha mínima continua 8. GitHub e Google seguem como na rodada anterior: desligados no painel, o botão explica; `PUBLIC_AUTH_GITHUB=false` ou `PUBLIC_AUTH_GOOGLE=false` escondem o botão no build.
 
-- Email: deixar confirmação como quiser. Ligada, a tela "Confirme seu e-mail" reenvia o link. Desligada, o cadastro cai direto no onboarding.
-- GitHub e Google: criar o app em cada um e colar client id e secret no Supabase. Enquanto o provider estiver desligado, o botão aparece e a tela explica que ainda não está configurado. Para esconder o botão no build, defina a variável do repositório `PUBLIC_AUTH_GITHUB` ou `PUBLIC_AUTH_GOOGLE` como `false`.
-- Tamanho mínimo de senha: 8, para bater com o medidor da interface.
-
-Redirect do GitHub/Google no app deles precisa aceitar `https://wlacdgwbwsykvpobkbib.supabase.co/auth/v1/callback`.
+Redirect dos apps OAuth: `https://wlacdgwbwsykvpobkbib.supabase.co/auth/v1/callback`.
 
 ## 4. O que não vai no Git
 
-Senha do banco, service role e tokens continuam fora do repositório. A chave publishable que já estava no cliente é a mesma.
+Senha do banco, service role e tokens continuam fora do repositório.

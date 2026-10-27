@@ -10,6 +10,9 @@ import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { features } from '@/lib/features';
 import { DonationPanel } from '@/modules/donations/DonationPanel';
+import { ReportUserDialog } from '@/modules/auth/ReportUserDialog';
+import { authErrorMessage } from '@/lib/auth';
+import { toast } from '@/lib/toast';
 
 type Status = 'loading' | 'ready' | 'empty' | 'missing' | 'error';
 
@@ -22,6 +25,7 @@ export function PublicProfile({ username }: { username?: string }) {
   const [name, setName] = useState(username ?? '');
   const [profile, setProfile] = useState<Profile | null>(null);
   const [status, setStatus] = useState<Status>(username ? 'loading' : 'loading');
+  const [blocked, setBlocked] = useState(false);
 
   useEffect(() => {
     const fromQuery = new URLSearchParams(window.location.search).get('username') ?? '';
@@ -58,6 +62,52 @@ export function PublicProfile({ username }: { username?: string }) {
       cancelled = true;
     };
   }, [username]);
+
+  useEffect(() => {
+    if (!me || !profile || me.id === profile.id) {
+      setBlocked(false);
+      return;
+    }
+    let cancelled = false;
+    void supabase
+      .from('user_blocks')
+      .select('blocked_id')
+      .eq('blocker_id', me.id)
+      .eq('blocked_id', profile.id)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (cancelled || error) return;
+        setBlocked(Boolean(data));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [me, profile]);
+
+  async function toggleBlock() {
+    if (!me || !profile) return;
+    if (blocked) {
+      const { error } = await supabase
+        .from('user_blocks')
+        .delete()
+        .eq('blocker_id', me.id)
+        .eq('blocked_id', profile.id);
+      if (error) {
+        toast(authErrorMessage(error.message));
+        return;
+      }
+      setBlocked(false);
+      toast('Bloqueio removido.');
+      return;
+    }
+    const { error } = await supabase.from('user_blocks').insert({ blocker_id: me.id, blocked_id: profile.id });
+    if (error && error.code !== '23505') {
+      toast(authErrorMessage(error.message));
+      return;
+    }
+    setBlocked(true);
+    toast('Pessoa bloqueada. Pedidos e conversas param dos dois lados.');
+  }
 
   if (status === 'loading') {
     return <div className="h-48 animate-pulse rounded-2xl border border-white/5 bg-card" />;
@@ -98,6 +148,8 @@ export function PublicProfile({ username }: { username?: string }) {
   }
 
   const progress = levelProgress(Number(profile.xp));
+  const mine = me?.id === profile.id;
+  const showStats = mine || profile.show_activity !== false;
 
   return (
     <div className="space-y-4">
@@ -122,22 +174,36 @@ export function PublicProfile({ username }: { username?: string }) {
               <p className="text-zinc-400">@{profile.username}</p>
             </div>
           </div>
+          {mine ? null : me ? (
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Button type="button" size="sm" variant="secondary" onClick={() => void toggleBlock()}>
+                {blocked ? 'Desbloquear' : 'Bloquear'}
+              </Button>
+              <ReportUserDialog userId={profile.id} username={profile.username} />
+            </div>
+          ) : null}
 
-          <div className="mt-6">
-            <div className="flex justify-between text-sm">
-              <span>Nível {profile.level}</span>
-              <span className="text-zinc-400">{formatXp(Number(profile.xp))} XP</span>
+          {showStats ? (
+            <div className="mt-6">
+              <div className="flex justify-between text-sm">
+                <span>Nível {profile.level}</span>
+                <span className="text-zinc-400">{formatXp(Number(profile.xp))} XP</span>
+              </div>
+              <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/5">
+                <div className="h-full rounded-full bg-accent" style={{ width: `${progress.ratio * 100}%` }} />
+              </div>
             </div>
-            <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/5">
-              <div className="h-full rounded-full bg-accent" style={{ width: `${progress.ratio * 100}%` }} />
-            </div>
-          </div>
+          ) : (
+            <p className="mt-6 text-sm text-zinc-400">Este jogador prefere não mostrar progresso.</p>
+          )}
 
           <dl className="mt-6 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-xl bg-white/5 px-4 py-3">
-              <dt className="text-xs text-zinc-500">Tempo jogado</dt>
-              <dd className="mt-1 font-medium">{formatPlayTime(Number(profile.total_play_time_seconds))}</dd>
-            </div>
+            {showStats ? (
+              <div className="rounded-xl bg-white/5 px-4 py-3">
+                <dt className="text-xs text-zinc-500">Tempo jogado</dt>
+                <dd className="mt-1 font-medium">{formatPlayTime(Number(profile.total_play_time_seconds))}</dd>
+              </div>
+            ) : null}
             <div className="rounded-xl bg-white/5 px-4 py-3">
               <dt className="text-xs text-zinc-500">No portal desde</dt>
               <dd className="mt-1 font-medium">{formatDate(profile.created_at)}</dd>

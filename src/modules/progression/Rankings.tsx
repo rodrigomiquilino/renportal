@@ -17,12 +17,21 @@ export function Rankings() {
     supabase
       .from('profiles')
       .select('*')
+      .eq('show_activity', true)
+      .neq('profile_visibility', 'private')
       .order('xp', { ascending: false })
       .limit(50)
-      .then(({ data, error }) => {
+      .then(async ({ data, error }) => {
         if (cancelled) return;
         if (error) {
-          setStatus('error');
+          const fallback = await supabase.from('profiles').select('*').order('xp', { ascending: false }).limit(50);
+          if (cancelled) return;
+          if (fallback.error) {
+            setStatus('error');
+            return;
+          }
+          setRows(fallback.data ?? []);
+          setStatus('ready');
           return;
         }
         setRows(data ?? []);
@@ -50,7 +59,8 @@ export function Rankings() {
     <section>
       <h1 className="text-3xl font-semibold tracking-tight">Rankings</h1>
       <p className="mt-2 max-w-2xl text-sm text-zinc-400">
-        Os 50 jogadores com mais XP. O nível segue a raiz do XP: 40 pontos separam o nível 1 do 2.
+        Os 50 jogadores com mais XP que deixam a atividade visível. O nível segue a raiz do XP: 40 pontos separam o
+        nível 1 do 2.
       </p>
       {rows.length === 0 ? (
         <p className="mt-6 rounded-2xl border border-white/5 bg-card px-5 py-8 text-sm text-zinc-400">

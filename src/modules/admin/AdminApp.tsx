@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { useAuth } from '@/lib/auth';
-import { href } from '@/lib/paths';
+import { refreshProfile, useRequireSession } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { GamesAdmin } from '@/modules/admin/GamesAdmin';
@@ -20,18 +19,20 @@ const tabs = [
 type Tab = (typeof tabs)[number][0];
 
 export function AdminApp() {
-  const { profile, loading } = useAuth();
+  const { profile, loading, session, error } = useRequireSession();
   const [tab, setTab] = useState<Tab>('games');
 
   if (loading) return <div className="h-64 animate-pulse rounded-2xl border border-white/5 bg-card" />;
 
-  if (!profile) {
+  if (!session) return <p className="text-sm text-zinc-400">Indo para o login…</p>;
+
+  if (error || !profile) {
     return (
       <section className="rounded-2xl border border-white/5 bg-card p-8">
         <h1 className="text-2xl font-semibold">Admin</h1>
-        <p className="mt-2 text-sm text-zinc-400">Entre com uma conta de administrador.</p>
-        <Button asChild className="mt-4">
-          <a href={href('/login')}>Entrar</a>
+        <p className="mt-2 text-sm text-zinc-400">{error ?? 'Não achei seu perfil.'}</p>
+        <Button type="button" className="mt-4" variant="secondary" onClick={() => void refreshProfile()}>
+          Tentar de novo
         </Button>
       </section>
     );

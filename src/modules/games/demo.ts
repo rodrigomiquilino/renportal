@@ -19,6 +19,7 @@ export const demoGame: Game = {
   linux_url: null,
   file_size_mb: 0.2,
   version: '1.0',
+  content_rating: 'everyone',
   published: true,
   created_at: '2026-01-01T00:00:00.000Z',
 };

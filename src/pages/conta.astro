@@ -1,0 +1,8 @@
+---
+import DashboardLayout from '../layouts/DashboardLayout.astro'
+import { AccountForm } from '../modules/auth/AccountForm'
+---
+
+<DashboardLayout title="Conta" description="E-mail, senha, privacidade e sessão do RenPortal.">
+  <AccountForm client:load />
+</DashboardLayout>

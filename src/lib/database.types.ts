@@ -42,6 +42,7 @@ export type Game = {
   linux_url: string | null;
   file_size_mb: number | null;
   version: string | null;
+  content_rating?: 'everyone' | 'mature';
   published: boolean;
   created_at: string;
 };
@@ -121,6 +122,25 @@ export type UserItem = {
   acquired_at: string;
 };
 
+export type ProfileVisibility = 'public' | 'members' | 'private';
+
+export type ReportReason = 'spam' | 'harassment' | 'adult' | 'other';
+
+export type UserBlock = {
+  blocker_id: string;
+  blocked_id: string;
+  created_at: string;
+};
+
+export type UserReport = {
+  id: string;
+  reporter_id: string;
+  target_id: string;
+  reason: ReportReason;
+  details: string | null;
+  created_at: string;
+};
+
 export type Profile = {
   id: string;
   username: string;
@@ -128,6 +148,10 @@ export type Profile = {
   avatar_url: string | null;
   banner_url: string | null;
   onboarded_at: string | null;
+  show_adult?: boolean;
+  profile_visibility?: ProfileVisibility;
+  show_activity?: boolean;
+  allow_friend_requests?: boolean;
   xp: number;
   level: number;
   total_play_time_seconds: number;
@@ -157,6 +181,10 @@ export type Database = {
           avatar_url?: string | null;
           banner_url?: string | null;
           onboarded_at?: string | null;
+          show_adult?: boolean;
+          profile_visibility?: ProfileVisibility;
+          show_activity?: boolean;
+          allow_friend_requests?: boolean;
           xp?: number;
           level?: number;
           total_play_time_seconds?: number;
@@ -172,6 +200,10 @@ export type Database = {
           avatar_url?: string | null;
           banner_url?: string | null;
           onboarded_at?: string | null;
+          show_adult?: boolean;
+          profile_visibility?: ProfileVisibility;
+          show_activity?: boolean;
+          allow_friend_requests?: boolean;
           xp?: number;
           level?: number;
           total_play_time_seconds?: number;
@@ -195,6 +227,7 @@ export type Database = {
           linux_url?: string | null;
           file_size_mb?: number | null;
           version?: string | null;
+          content_rating?: 'everyone' | 'mature';
           published?: boolean;
           created_at?: string;
           id?: string;
@@ -211,6 +244,7 @@ export type Database = {
           linux_url?: string | null;
           file_size_mb?: number | null;
           version?: string | null;
+          content_rating?: 'everyone' | 'mature';
           published?: boolean;
         }
       >;
@@ -349,6 +383,23 @@ export type Database = {
           reference_id?: string | null;
         }
       >;
+      user_blocks: Table<
+        UserBlock,
+        { blocker_id: string; blocked_id: string; created_at?: string },
+        { created_at?: string }
+      >;
+      user_reports: Table<
+        UserReport,
+        {
+          reporter_id: string;
+          target_id: string;
+          reason: ReportReason;
+          details?: string | null;
+          id?: string;
+          created_at?: string;
+        },
+        { details?: string | null; reason?: ReportReason }
+      >;
     };
     Views: {
       [_ in never]: never;
@@ -361,6 +412,10 @@ export type Database = {
       set_user_role: {
         Args: { p_user_id: string; p_role: string };
         Returns: null;
+      };
+      username_taken: {
+        Args: { p_username: string; p_except?: string | null };
+        Returns: boolean;
       };
       admin_stats: {
         Args: Record<string, never>;

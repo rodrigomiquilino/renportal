@@ -153,7 +153,9 @@ export function EditProfileDialog() {
           ? 'Já existe uma conta com esse usuário.'
           : usernameState === 'invalid'
             ? 'Use 3 a 24 caracteres: letras minúsculas, números e _.'
-            : '';
+            : usernameState === 'error'
+              ? 'Não consegui conferir agora. Você ainda pode tentar salvar.'
+              : '';
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

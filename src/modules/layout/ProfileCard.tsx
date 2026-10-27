@@ -92,6 +92,9 @@ export function ProfileCard() {
           <a href={href(`/profile/?username=${encodeURIComponent(profile.username)}`)}>Ver perfil público</a>
         </Button>
         <EditProfileDialog />
+        <Button asChild variant="ghost" size="sm" className="w-full">
+          <a href={href('/conta/')}>Conta e privacidade</a>
+        </Button>
       </div>
     </div>
   );
